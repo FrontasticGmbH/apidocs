@@ -22,7 +22,7 @@ Fully Qualified: [`<?php e($entity->getFqsen()); ?>`](<?php e($relativeSourceLoc
 Property|Type|Default|Description
 --------|----|-------|-----------
 <?php foreach ($properties as $property): ?>
-<?php e($property->isStatic() ? '`static` ' : '')?>`<?php e($property->getName()); ?>`|`<?php e(linkOwn($targetFile, implode('`, `', $property->getTypes()))); ?>`|<?php e($property->getDefault() ? '`' . $property->getDefault() . '' : ''); ?>|<?php e($property->getDocBlock() ? $property->getDocBlock()->getSummary() : ''); ?>
+<?php e($property->isStatic() ? '`static` ' : '')?>`<?php e($property->getName()); ?>`|`<?php e(linkOwn($targetFile, implode('`, `', $property->getTypes()))); ?>`|<?php e($property->getDefault() ? '`' . $property->getDefault() . '`' : ''); ?>|<?php e($property->getDocBlock() ? $property->getDocBlock()->getSummary() : ''); ?>
 
 <?php endforeach; ?>
 <?php endif; ?>
