@@ -101,6 +101,8 @@ function linkOwn(string $from, string $input): string {
     return $input;
 }
 
+$index = '# ' . $configuration->name . "\n\n" . wordwrap('Here you find the API documentation for the relevant classes:') . "\n\n";
+
 include $configuration->source . '/' . $configuration->autoloader;
 try {
     $project = ProjectFactory::createInstance()->create(
@@ -136,6 +138,8 @@ try {
         if (!$entity) {
             continue;
         }
+
+        $index .= '* [' . trim(str_replace($configuration->nameSpace, '', $entity->getFqsen()), '\\') . '](' . $file->getPath() . ")\n";
 
         $targetFile = $configuration->target . str_replace($configuration->source, '', $file->getPath());
         $targetFile = preg_replace('(\\.[a-zA-Z0-9.]+$)', '.md', $targetFile);
@@ -234,6 +238,8 @@ try {
         include(__DIR__ . '/../src/php.php');
         file_put_contents($targetFile, ob_get_clean());
     }
+
+    file_put_contents($configuration->target . '/README.md' , $index);
 } catch (\Throwable $e) {
     echo $e;
     exit(1);

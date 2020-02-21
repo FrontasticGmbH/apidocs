@@ -3,6 +3,7 @@ name: "Frontastic Common Library"
 source: ../common/src
 target: ../common/docs
 autoloader: ../vendor/autoload.php
+nameSpace: "\\Frontastic\\Common\\"
 files:
  - php/AccountApiBundle/Domain/AccountApi/LifecycleEventDecorator/BaseImplementation.php
  - php/AccountApiBundle/Domain/AccountApi.php
