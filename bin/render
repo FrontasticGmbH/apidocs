@@ -30,9 +30,19 @@ function getRelativePath(string $source, string $target): string {
     $absoluteTarget = array_values(array_filter(explode('/', realpath($target))));
     $absoluteSource = array_values(array_filter(explode('/', realpath($source))));
 
+    if (!count($absoluteTarget) || !count($absoluteSource)) {
+        throw new \OutOfBoundsException("$source and $target must exist for this method to work.");
+    }
+
     $part = 0;
-    while ($absoluteSource[$part] === $absoluteTarget[$part]) {
+    while (isset($absoluteSource[$part]) &&
+        isset($absoluteTarget[$part]) &&
+        $absoluteSource[$part] === $absoluteTarget[$part]) {
         ++$part;
+    }
+
+    if ($part >= count($absoluteSource)) {
+        return basename($source);
     }
 
     $relativeFromTargetToSource = array_merge(
@@ -72,6 +82,19 @@ function makeAnchor(string $heading) {
     echo trim(preg_replace('([^A-Za-z0-9]+)', '-', $heading), '-');
 }
 
+$classIndex = [];
+function linkOwn(string $from, string $input): string {
+    foreach ($GLOBALS['classIndex'] as $class => $docFile) {
+        $input = str_replace(
+            $class,
+            '[' . substr(strrchr($class, '\\'), 1) . '](' . getRelativePath($docFile, $from) . ')',
+            $input
+        );
+    }
+
+    return $input;
+}
+
 include $configuration->source . '/' . $configuration->autoloader;
 try {
     $project = ProjectFactory::createInstance()->create(
@@ -97,6 +120,19 @@ try {
             mkdir(dirname($targetFile), 0755, true);
         }
         touch($targetFile);
+
+        $classIndex[(string) $entity->getFqsen()] = $targetFile;
+    }
+    krsort($classIndex);
+
+    foreach ($project->getFiles() as $file) {
+        $entity = array_values($file->getClasses())[0] ?? array_values($file->getInterfaces())[0] ?? null;
+        if (!$entity) {
+            continue;
+        }
+
+        $targetFile = $configuration->target . str_replace($configuration->source, '', $file->getPath());
+        $targetFile = preg_replace('(\\.[a-zA-Z0-9.]+$)', '.md', $targetFile);
 
         $properties = array_values(
             array_map(
@@ -165,7 +201,7 @@ try {
                                             ($argument->type ? $argument->type . ' ' : '') .
                                             ($argument->isByReference ? '&' : '') .
                                             ($argument->isVariadic ? '…' : '') .
-                                            $argument->name .
+                                            '$' . $argument->name .
                                             ($argument->default ? ' = ' . $argument->default : '')
                                         );
                                     },

@@ -22,7 +22,7 @@ Fully Qualified: [`<?php e($entity->getFqsen()); ?>`](<?php e($relativeSourceLoc
 Property|Type|Default|Description
 --------|----|-------|-----------
 <?php foreach ($properties as $property): ?>
-<?php e($property->isStatic() ? '`static` ' : '')?>`<?php e($property->getName()); ?>`|`<?php e(implode('`, `', $property->getTypes())); ?>`|`<?php e($property->getDefault() ?: ''); ?>`|<?php e($property->getDocBlock() ? $property->getDocBlock()->getSummary() : ''); ?>
+<?php e($property->isStatic() ? '`static` ' : '')?>`<?php e($property->getName()); ?>`|`<?php e(linkOwn($targetFile, implode('`, `', $property->getTypes()))); ?>`|`<?php e($property->getDefault() ?: ''); ?>`|<?php e($property->getDocBlock() ? $property->getDocBlock()->getSummary() : ''); ?>
 
 <?php endforeach; ?>
 <?php endif; ?>
@@ -40,7 +40,7 @@ Property|Type|Default|Description
 
 
 ```php
-<?php e($method->signature); ?>
+<?php e(linkOwn($targetFile, $method->signature)); ?>
 
 ```
 
@@ -55,7 +55,7 @@ Property|Type|Default|Description
 Argument|Type|Default|Description
 --------|----|-------|-----------
 <?php foreach ($method->arguments as $argument): ?>
-`<?php e('$' . $argument->name); ?>`|`<?php e(($argument->isByReference ? '&' : '') . ($argument->isVariadic ? '…' : '') . $argument->type); ?>`|`<?php e($argument->default ?: ''); ?>`|<?php e($argument->description); ?>
+`<?php e('$' . $argument->name); ?>`|`<?php e(($argument->isByReference ? '&' : '') . ($argument->isVariadic ? '…' : '') . linkOwn($targetFile, $argument->type)); ?>`|`<?php e($argument->default ?: ''); ?>`|<?php e($argument->description); ?>
 
 <?php endforeach; ?>
 <?php endif; ?>
