@@ -79,15 +79,15 @@ function w(string $text) {
 }
 
 function makeAnchor(string $heading) {
-    echo trim(preg_replace('([^A-Za-z0-9]+)', '-', $heading), '-');
+    echo trim(preg_replace('([^A-Za-z0-9]+)', '-', strtolower($heading)), '-');
 }
 
 $classIndex = [];
 function linkOwn(string $from, string $input): string {
     foreach ($GLOBALS['classIndex'] as $class => $docFile) {
-        $input = str_replace(
-            '`' . $class . '`',
-            '[`' . substr(strrchr($class, '\\'), 1) . '`](' . getRelativePath($docFile, $from) . ')',
+        $input = preg_replace(
+            '(`(\\?)?' . preg_quote($class) . '`)',
+            '\\1[`' . substr(strrchr($class, '\\'), 1) . '`](' . getRelativePath($docFile, $from) . ')',
             $input
         );
 

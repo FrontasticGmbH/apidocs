@@ -55,7 +55,7 @@ Property|Type|Default|Description
 Argument|Type|Default|Description
 --------|----|-------|-----------
 <?php foreach ($method->arguments as $argument): ?>
-`<?php e('$' . $argument->name); ?>`|<?php e(($argument->isByReference ? '`&` ' : '') . ($argument->isVariadic ? '`…` ' : '') . linkOwn($targetFile, '`' . $argument->type . '`')); ?>|`<?php e($argument->default ?: ''); ?>`|<?php e($argument->description); ?>
+`<?php e(($argument->isByReference ? '&' : '') . ($argument->isVariadic ? '…' : '') . '$' . $argument->name); ?>`|<?php e(linkOwn($targetFile, '`' . $argument->type . '`')); ?>|`<?php e($argument->default ?: ''); ?>`|<?php e($argument->description); ?>
 
 <?php endforeach; ?>
 <?php endif; ?>
