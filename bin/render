@@ -1,0 +1,198 @@
+#!/usr/bin/env php
+<?php
+
+use Symfony\Component\Yaml\Yaml;
+
+use phpDocumentor\Reflection\Php\ProjectFactory;
+use phpDocumentor\Reflection\Php\Interface_;
+use phpDocumentor\Reflection\Php\Property;
+use phpDocumentor\Reflection\Php\Method;
+use phpDocumentor\Reflection\Php\Argument;
+use phpDocumentor\Reflection\DocBlock\Tags\Var_;
+use phpDocumentor\Reflection\DocBlock\Tags\Param;
+use phpDocumentor\Reflection\File\LocalFile;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$configuration = (object) Yaml::parse(file_get_contents('./.apidocs.yml'));
+$configuration->files = array_map(
+    function (string $fileName) use ($configuration): string {
+        return ($configuration->source ?? '.') . '/' . $fileName;
+    },
+    $configuration->files
+);
+
+if (!file_exists($configuration->target)) {
+    mkdir($configuration->target, 0755, true);
+}
+
+function getRelativePath(string $source, string $target): string {
+    $absoluteTarget = array_values(array_filter(explode('/', realpath($target))));
+    $absoluteSource = array_values(array_filter(explode('/', realpath($source))));
+
+    $part = 0;
+    while ($absoluteSource[$part] === $absoluteTarget[$part]) {
+        ++$part;
+    }
+
+    $relativeFromTargetToSource = array_merge(
+        array_fill(0, count($absoluteTarget) - $part - 1, '..'),
+        array_slice($absoluteSource, $part)
+    );
+    $relativeFromTargetToSource = implode('/', $relativeFromTargetToSource);
+    return $relativeFromTargetToSource;
+}
+
+function e(string $text) {
+    // @TODO: Escape for markdown?
+    echo $text;
+}
+
+function w(string $text) {
+    // @TODO: Escape for markdown?
+    echo wordwrap(
+        preg_replace(
+            '((?<!' . PHP_EOL . ')' . PHP_EOL . '(?!\s*' . PHP_EOL . '))',
+            ' ',
+            preg_replace(
+                '(^\s+$)m',
+                '',
+                preg_replace(
+                    '(\r\n|\r|\n)',
+                    PHP_EOL,
+                    $text
+                )
+            )
+        ),
+        78
+    );
+}
+
+function makeAnchor(string $heading) {
+    echo trim(preg_replace('([^a-z0-9]+)', '-', strtolower($heading)), '-');
+}
+
+include $configuration->source . '/' . $configuration->autoloader;
+try {
+    $project = ProjectFactory::createInstance()->create(
+        $configuration->name ?? 'Test Project',
+        array_map(
+            function (string $fileName): LocalFile {
+                return new LocalFile($fileName);
+            },
+            $configuration->files
+        )
+    );
+
+    foreach ($project->getFiles() as $file) {
+        $entity = array_values($file->getClasses())[0] ?? array_values($file->getInterfaces())[0] ?? null;
+        if (!$entity) {
+            continue;
+        }
+
+        $targetFile = $configuration->target . str_replace($configuration->source, '', $file->getPath());
+        $targetFile = preg_replace('(\\.[a-zA-Z0-9.]+$)', '.md', $targetFile);
+
+        if (!file_exists(dirname($targetFile))) {
+            mkdir(dirname($targetFile), 0755, true);
+        }
+        touch($targetFile);
+
+        $properties = array_values(
+            array_map(
+                // Merge type information with information from doc block
+                function (Property $property): Property {
+                    if (!count($property->getTypes()) && $property->getDocBlock()) {
+                        foreach ($property->getDocBlock()->getTags() as $tag) {
+                            if ($tag instanceOf Var_) {
+                                $property->addType((string) $tag->getType());
+                            }
+                        }
+                    }
+
+                    return $property;
+                },
+                // Only show public properties
+                array_filter(
+                    $entity instanceOf Interface_ ? [] : $entity->getProperties(),
+                    function (Property $property): bool {
+                        return $property->getVisibility() == 'public';
+                    }
+                )
+            )
+        );
+
+        $methods = array_values(
+            array_map(
+                function (Method $method): object {
+                    $arguments = array_map(
+                        function (Argument $argument) use ($method): object {
+                            $description = '';
+                            if ($method->getDocBlock()) {
+                                foreach ($method->getDocBlock()->getTags() as $tag) {
+                                    if ($tag instanceOf Param &&
+                                        $tag->getVariableName() === $argument->getName()) {
+                                        $description = $tag->getDescription();
+                                    }
+                                }
+                            }
+                            return (object) [
+                                'name' => $argument->getName(),
+                                'type' => $argument->getType(),
+                                'default' => $argument->getDefault(),
+                                'isByReference' => $argument->isByReference(),
+                                'isVariadic' => $argument->isVariadic(),
+                                'description' => $description,
+                            ];
+                        },
+                        $method->getArguments()
+                    );
+
+                    return (object) [
+                        'name' => $method->getName(),
+                        'summary' => $method->getDocBlock() ? $method->getDocBlock()->getSummary() : null,
+                        'description' => $method->getDocBlock() ? $method->getDocBlock()->getDescription() : null,
+                        'arguments' => $arguments,
+                        'signature' => (
+                            ($method->isStatic() ? 'static ' : '') .
+                            ($method->isAbstract() ? 'abstract ' : '') .
+                            'function ' . $method->getName() . '(' .
+                            implode(
+                                ', ',
+                                array_map(
+                                    function (object $argument): string {
+                                        return (
+                                            ($argument->type ? $argument->type . ' ' : '') .
+                                            ($argument->isByReference ? '&' : '') .
+                                            ($argument->isVariadic ? '…' : '') .
+                                            $argument->name .
+                                            ($argument->default ? ' = ' . $argument->default : '')
+                                        );
+                                    },
+                                    $arguments
+                                )
+                            ) .
+                            '): ' . $method->getReturnType()
+                        ),
+                    ];
+                },
+                array_filter(
+                    $entity->getMethods(),
+                    function (Method $method): bool {
+                        return $method->getVisibility() == 'public';
+                    }
+                )
+            )
+        );
+
+        $relativeSourceLocation = getRelativePath($file->getPath(), $targetFile);
+
+        ob_start();
+        include(__DIR__ . '/../src/php.php');
+        file_put_contents($targetFile, ob_get_clean());
+    }
+} catch (\Throwable $e) {
+    echo $e;
+    exit(1);
+}
+
