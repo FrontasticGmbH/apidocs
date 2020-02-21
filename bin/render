@@ -198,9 +198,9 @@ try {
                         'signature' => (
                             ($method->isStatic() ? 'static ' : '') .
                             ($method->isAbstract() ? 'abstract ' : '') .
-                            'public function ' . $method->getName() . '(' .
+                            'public function ' . $method->getName() . "(\n    " .
                             implode(
-                                ', ',
+                                ",\n    ",
                                 array_map(
                                     function (object $argument): string {
                                         return (
@@ -214,7 +214,7 @@ try {
                                     $arguments
                                 )
                             ) .
-                            '): ' . $method->getReturnType()
+                            "\n): " . $method->getReturnType()
                         ),
                         'return' => (string) $method->getReturnType(),
                     ];
