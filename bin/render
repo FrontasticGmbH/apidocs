@@ -86,8 +86,14 @@ $classIndex = [];
 function linkOwn(string $from, string $input): string {
     foreach ($GLOBALS['classIndex'] as $class => $docFile) {
         $input = str_replace(
+            '`' . $class . '`',
+            '[`' . substr(strrchr($class, '\\'), 1) . '`](' . getRelativePath($docFile, $from) . ')',
+            $input
+        );
+
+        $input = str_replace(
             $class,
-            '[' . substr(strrchr($class, '\\'), 1) . '](' . getRelativePath($docFile, $from) . ')',
+            substr(strrchr($class, '\\'), 1),
             $input
         );
     }
@@ -210,6 +216,7 @@ try {
                             ) .
                             '): ' . $method->getReturnType()
                         ),
+                        'return' => (string) $method->getReturnType(),
                     ];
                 },
                 array_filter(
