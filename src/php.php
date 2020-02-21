@@ -31,16 +31,24 @@ Property|Type|Default|Description
 ## Methods
 
 <?php foreach ($methods as $method): ?>
-### <?php e($method->name) ?>
+* [<?php e($method->name) ?>()](#<?php makeAnchor($method->name) ?>)
+<?php endforeach; ?>
 
 
-`<?php e($method->signature); ?>`
+<?php foreach ($methods as $method): ?>
+### <?php e($method->name) ?>()
+
+
+```php
+<?php e($method->signature); ?>
+
+```
 
 
 <?php $method->summary ? e('*' . $method->summary . '*') : ''; ?>
 
 
-<?php $method->description ? e('*' . $method->description . '*') : ''; ?>
+<?php $method->description ? e($method->description) : ''; ?>
 
 
 <?php if (count($method->arguments)): ?>
