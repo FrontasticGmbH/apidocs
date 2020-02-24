@@ -14,21 +14,47 @@ use phpDocumentor\Reflection\File\LocalFile;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$configuration = (object) Yaml::parse(file_get_contents('./.apidocs.yml'));
+$configurationFile = $argv[1] ?? './.apidocs.yml';
+if (!file_exists($configurationFile)) {
+    echo "Usage: ", $argv[0], " [<configurationFile]", PHP_EOL;
+    echo PHP_EOL;
+    echo wordwrap("By default `.apidoc.yml` in the current directory will be used. You can specify another configuration file as a command line parameter. The paths in the configuration file will be relative to the configuration file.", 78), PHP_EOL;
+    exit(1);
+}
+
+$configurationFile = realpath($configurationFile);
+$rootPath = dirname(($configurationFile));
+
+$configuration = (object) Yaml::parse(file_get_contents($configurationFile));
 $configuration->files = array_map(
     function (string $fileName) use ($configuration): string {
-        return ($configuration->source ?? '.') . '/' . $fileName;
+        return makeAbsolute(($configuration->source ?? '.') . '/' . $fileName);
     },
     $configuration->files
 );
+$configuration->source = makeAbsolute($configuration->source);
+$configuration->target = makeAbsolute($configuration->target);
+$configuration->autoloader = makeAbsolute($configuration->autoloader);
 
 if (!file_exists($configuration->target)) {
     mkdir($configuration->target, 0755, true);
 }
 
+function makeAbsolute(string $path): string {
+    if ($path[0] !== '/') {
+        $path = $GLOBALS['rootPath'] . '/' . $path;
+    }
+
+    if (!file_exists($path)) {
+        throw new \OutOfBoundsException("Connot find file $path");
+    }
+
+    return realpath($path);
+}
+
 function getRelativePath(string $source, string $target): string {
-    $absoluteTarget = array_values(array_filter(explode('/', realpath($target))));
-    $absoluteSource = array_values(array_filter(explode('/', realpath($source))));
+    $absoluteTarget = array_values(array_filter(explode('/', makeAbsolute($target))));
+    $absoluteSource = array_values(array_filter(explode('/', makeAbsolute($source))));
 
     if (!count($absoluteTarget) || !count($absoluteSource)) {
         throw new \OutOfBoundsException("$source and $target must exist for this method to work.");
@@ -103,7 +129,7 @@ function linkOwn(string $from, string $input): string {
 
 $index = '# ' . $configuration->name . "\n\n" . wordwrap('Here you find the API documentation for the relevant classes:') . "\n\n";
 
-include $configuration->source . '/' . $configuration->autoloader;
+include $configuration->autoloader;
 try {
     $project = ProjectFactory::createInstance()->create(
         $configuration->name ?? 'Test Project',
@@ -139,10 +165,10 @@ try {
             continue;
         }
 
-        $index .= '* [' . trim(str_replace($configuration->nameSpace, '', $entity->getFqsen()), '\\') . '](' . $file->getPath() . ")\n";
-
         $targetFile = $configuration->target . str_replace($configuration->source, '', $file->getPath());
         $targetFile = preg_replace('(\\.[a-zA-Z0-9.]+$)', '.md', $targetFile);
+
+        $index .= '* [' . trim(str_replace($configuration->nameSpace, '', $entity->getFqsen()), '\\') . '](' . getRelativePath($targetFile, $configuration->target . '/README.md') . ")\n";
 
         $properties = array_values(
             array_map(
