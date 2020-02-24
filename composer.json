@@ -14,6 +14,9 @@
     },
     "require-dev": {
     },
+    "bin": [
+        "bin/apidocs"
+    ],
     "autoload": {
         "psr-4": {
             "Frontastic\\Apidocs\\": "src/php/"
