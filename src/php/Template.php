@@ -36,6 +36,11 @@ class Template
         );
     }
 
+    public function removeNewLines(string $text): string
+    {
+        return preg_replace('([\r\n\s]+)', ' ', $text);
+    }
+
     public function makeAnchor(string $heading) {
         echo trim(preg_replace('([^A-Za-z0-9__]+)', '-', strtolower($heading)), '-');
     }

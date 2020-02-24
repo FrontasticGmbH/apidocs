@@ -22,7 +22,7 @@ Fully Qualified: [`<?php $this->e($entity->getFqsen()); ?>`](<?php $this->e($rel
 Property|Type|Default|Description
 --------|----|-------|-----------
 <?php foreach ($properties as $property): ?>
-<?php $this->e($property->isStatic() ? '`static` ' : '')?>`<?php $this->e($property->getName()); ?>`|`<?php $this->e($this->linkOwn($targetFile, implode('`, `', $property->getTypes()))); ?>`|<?php $this->e($property->getDefault() ? '`' . $property->getDefault() . '`' : ''); ?>|<?php $this->e($property->getDocBlock() ? $property->getDocBlock()->getSummary() : ''); ?>
+<?php $this->e($property->isStatic() ? '`static` ' : '')?>`<?php $this->e($property->getName()); ?>`|`<?php $this->e($this->linkOwn($targetFile, implode('`, `', $property->getTypes()))); ?>`|<?php $this->e($property->getDefault() ? '`' . $property->getDefault() . '`' : ''); ?>|<?php $this->e($property->getDocBlock() ? $this->removeNewLines($property->getDocBlock()->getSummary()) : ''); ?>
 
 <?php endforeach; ?>
 <?php endif; ?>
@@ -55,7 +55,7 @@ Property|Type|Default|Description
 Argument|Type|Default|Description
 --------|----|-------|-----------
 <?php foreach ($method->arguments as $argument): ?>
-`<?php $this->e(($argument->isByReference ? '&' : '') . ($argument->isVariadic ? '…' : '') . '$' . $argument->name); ?>`|<?php $this->e($this->linkOwn($targetFile, '`' . $argument->type . '`')); ?>|<?php $this->e($argument->default ? '`' . $argument->default . '`' : ''); ?>|<?php $this->e($argument->description); ?>
+`<?php $this->e(($argument->isByReference ? '&' : '') . ($argument->isVariadic ? '…' : '') . '$' . $argument->name); ?>`|<?php $this->e($this->linkOwn($targetFile, '`' . $argument->type . '`')); ?>|<?php $this->e($argument->default ? '`' . $argument->default . '`' : ''); ?>|<?php $this->e($this->removeNewLines($argument->description)); ?>
 
 <?php endforeach; ?>
 <?php endif; ?>
