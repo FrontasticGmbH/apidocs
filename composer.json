@@ -1,6 +1,6 @@
 {
     "name": "frontastic/apidocs",
-    "license": "None",
+    "license": "MIT",
     "version": "1.0.0-alpha.7",
     "config": {
         "platform": {
