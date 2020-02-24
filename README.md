@@ -13,6 +13,9 @@ This includes adding as many cross-references ass possible to make the code &
 documentation dicoverable. This tools tries to focus on the relevant
 information and does not try to output as much information as somehow possible.
 
+Our own (very boring) [API documentation](docs/) is also generated using this
+tool.
+
 ## Configuration File
 
 The configuration of this tools is done using a YAML file called

@@ -48,7 +48,7 @@ class PhpDoc
         }
 
         $this->index = '# ' . $this->configuration->name . "\n\n" .
-            $template->w('Here you find the API documentation for the relevant classes:') . "\n\n";
+            wordwrap('Here you find the API documentation for the relevant classes:', 78) . "\n\n";
 
         $project = ProjectFactory::createInstance()->create(
             $this->configuration->name ?? 'Test Project',

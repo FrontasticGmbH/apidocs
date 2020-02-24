@@ -15,10 +15,12 @@ if (!file_exists($configurationFile)) {
 
 try {
     $phpDoc = new PhpDoc($configurationFile);
+
+    touch($phpDoc->getConfiguration()->target . '/README.md');
     $phpDoc->render();
 
     file_put_contents(
-        $phpDoc->getConfiguration()->target . '/README.md' ,
+        $phpDoc->getConfiguration()->target . '/README.md',
         $phpDoc->getIndex()
     );
 } catch (\Throwable $e) {
