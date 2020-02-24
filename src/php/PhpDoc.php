@@ -50,15 +50,35 @@ class PhpDoc
         $this->index = '# ' . $this->configuration->name . "\n\n" .
             wordwrap('Here you find the API documentation for the relevant classes:', 78) . "\n\n";
 
-        $project = ProjectFactory::createInstance()->create(
-            $this->configuration->name ?? 'Test Project',
-            array_map(
-                function (string $fileName): LocalFile {
-                    return new LocalFile($fileName);
-                },
-                $this->configuration->files
-            )
-        );
+
+        try {
+            $project = ProjectFactory::createInstance()->create(
+                $this->configuration->name ?? 'Test Project',
+                array_filter(
+                    array_map(
+                        function (string $fileName): ?LocalFile {
+                            return new LocalFile($fileName);
+                        },
+                        $this->configuration->files
+                    )
+                )
+            );
+        } catch (\Throwable $e) {
+            // @TODO: There must be saner way to get information about the file
+            // which could not be parsed, but not finding it…
+            $fileName = null;
+            foreach ($e->getTrace() as $call) {
+                if (($call['class'] === 'phpDocumentor\\Reflection\\Php\\Factory\\AbstractFactory') &&
+                    ($call['function'] === 'create') &&
+                    count($call['args']) &&
+                    ($call['args'][0] instanceOf LocalFile)) {
+                    $fileName = $call['args'][0]->path();
+                }
+            }
+
+            echo '[e] Error parsing ', ($fileName ?: 'unknown'), ': ', $e->getMessage(), PHP_EOL;
+            exit(2);
+        }
 
         foreach ($project->getFiles() as $file) {
             $entity = array_values($file->getClasses())[0] ?? array_values($file->getInterfaces())[0] ?? null;
