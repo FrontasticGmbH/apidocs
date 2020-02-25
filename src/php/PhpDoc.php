@@ -109,77 +109,11 @@ class PhpDoc
                 $this->fileTools->getRelativePath($targetFile, $this->configuration->target . '/README.md')
             );
 
-            $properties = $this->getProperties($entity);
-
-            $methods = array_values(
-                array_map(
-                    function (Method $method): object {
-                        $arguments = array_map(
-                            function (Argument $argument) use ($method): object {
-                                $description = '';
-                                if ($method->getDocBlock()) {
-                                    foreach ($method->getDocBlock()->getTags() as $tag) {
-                                        if ($tag instanceOf Param &&
-                                            $tag->getVariableName() === $argument->getName()) {
-                                            $description = $tag->getDescription();
-                                        }
-                                    }
-                                }
-                                return (object) [
-                                    'name' => $argument->getName(),
-                                    'type' => $argument->getType(),
-                                    'default' => $argument->getDefault(),
-                                    'isByReference' => $argument->isByReference(),
-                                    'isVariadic' => $argument->isVariadic(),
-                                    'description' => $description,
-                                ];
-                            },
-                            $method->getArguments()
-                        );
-
-                        return (object) [
-                            'name' => $method->getName(),
-                            'summary' => $method->getDocBlock() ? $method->getDocBlock()->getSummary() : null,
-                            'description' => $method->getDocBlock() ? $method->getDocBlock()->getDescription() : null,
-                            'arguments' => $arguments,
-                            'signature' => (
-                                ($method->isStatic() ? 'static ' : '') .
-                                ($method->isAbstract() ? 'abstract ' : '') .
-                                'public function ' . $method->getName() . "(\n    " .
-                                implode(
-                                    ",\n    ",
-                                    array_map(
-                                        function (object $argument): string {
-                                            return (
-                                                ($argument->type ? $argument->type . ' ' : '') .
-                                                ($argument->isByReference ? '&' : '') .
-                                                ($argument->isVariadic ? '…' : '') .
-                                                '$' . $argument->name .
-                                                ($argument->default ? ' = ' . $argument->default : '')
-                                            );
-                                        },
-                                        $arguments
-                                    )
-                                ) .
-                                "\n): " . $method->getReturnType()
-                            ),
-                            'return' => (string) $method->getReturnType(),
-                        ];
-                    },
-                    array_filter(
-                        $entity->getMethods(),
-                        function (Method $method): bool {
-                            return $method->getVisibility() == 'public';
-                        }
-                    )
-                )
-            );
-
             $template->render(
                 $targetFile,
                 $entity,
-                $methods,
-                $properties,
+                $this->getMethods($entity),
+                $this->getProperties($entity),
                 $this->fileTools->getRelativePath($file->getPath(), $targetFile)
             );
         }
@@ -231,6 +165,73 @@ class PhpDoc
                     $entity instanceOf Interface_ ? [] : $entity->getProperties(),
                     function (Property $property): bool {
                         return $property->getVisibility() == 'public';
+                    }
+                )
+            )
+        );
+    }
+
+    private function getMethods(object $entity): array
+    {
+        return array_values(
+            array_map(
+                function (Method $method): object {
+                    $arguments = array_map(
+                        function (Argument $argument) use ($method): object {
+                            $description = '';
+                            if ($method->getDocBlock()) {
+                                foreach ($method->getDocBlock()->getTags() as $tag) {
+                                    if ($tag instanceOf Param &&
+                                        $tag->getVariableName() === $argument->getName()) {
+                                        $description = $tag->getDescription();
+                                    }
+                                }
+                            }
+                            return (object) [
+                                'name' => $argument->getName(),
+                                'type' => $argument->getType(),
+                                'default' => $argument->getDefault(),
+                                'isByReference' => $argument->isByReference(),
+                                'isVariadic' => $argument->isVariadic(),
+                                'description' => $description,
+                            ];
+                        },
+                        $method->getArguments()
+                    );
+
+                    return (object) [
+                        'name' => $method->getName(),
+                        'summary' => $method->getDocBlock() ? $method->getDocBlock()->getSummary() : null,
+                        'description' => $method->getDocBlock() ? $method->getDocBlock()->getDescription() : null,
+                        'arguments' => $arguments,
+                        'signature' => (
+                            ($method->isStatic() ? 'static ' : '') .
+                            ($method->isAbstract() ? 'abstract ' : '') .
+                            'public function ' . $method->getName() . "(\n    " .
+                            implode(
+                                ",\n    ",
+                                array_map(
+                                    function (object $argument): string {
+                                        return (
+                                            ($argument->type ? $argument->type . ' ' : '') .
+                                            ($argument->isByReference ? '&' : '') .
+                                            ($argument->isVariadic ? '…' : '') .
+                                            '$' . $argument->name .
+                                            ($argument->default ? ' = ' . $argument->default : '')
+                                        );
+                                    },
+                                    $arguments
+                                )
+                            ) .
+                            "\n): " . $method->getReturnType()
+                        ),
+                        'return' => (string) $method->getReturnType(),
+                    ];
+                },
+                array_filter(
+                    $entity->getMethods(),
+                    function (Method $method): bool {
+                        return $method->getVisibility() == 'public';
                     }
                 )
             )
