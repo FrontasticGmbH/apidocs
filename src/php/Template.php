@@ -6,6 +6,19 @@ class Template
 {
     private $classIndex = [];
 
+    private $externalClassIndex = [
+        '\\Kore\\DataObject\\DataObject' => 'https://github.com/kore/DataObject',
+        '\\Traversable' => 'https://www.php.net/manual/de/class.traversable.php',
+        '\\Iterator' => 'https://www.php.net/manual/de/class.iterator.php',
+        '\\IteratorAggregate' => 'https://www.php.net/manual/de/class.iteratoraggregate.php',
+        '\\Throwable' => 'https://www.php.net/manual/de/class.throwable.php',
+        '\\ArrayAccess' => 'https://www.php.net/manual/de/class.arrayaccess.php',
+        '\\Serializable' => 'https://www.php.net/manual/de/class.serializable.php',
+        '\\Closure' => 'https://www.php.net/manual/de/class.closure.php',
+        '\\Generator' => 'https://www.php.net/manual/de/class.generator.php',
+        '\\WeakReference' => 'https://www.php.net/manual/de/class.weakreference.php',
+    ];
+
     private $fileTools;
 
     public function __construct(FileTools $fileTools)
@@ -48,14 +61,22 @@ class Template
     public function linkOwn(string $from, string $input): string {
         foreach ($this->classIndex as $class => $docFile) {
             $input = preg_replace(
-                '(`(\\?)?' . preg_quote($class) . '`)',
-                '\\1[`' . substr(strrchr($class, '\\'), 1) . '`](' . $this->fileTools->getRelativePath($docFile, $from) . ')',
+                '(`(\\?)?' . preg_quote($class) . '(\\[\\])?`)',
+                '\\1[`' . substr(strrchr($class, '\\'), 1) . '`](' . $this->fileTools->getRelativePath($docFile, $from) . ')\\2',
                 $input
             );
 
             $input = str_replace(
                 $class,
                 substr(strrchr($class, '\\'), 1),
+                $input
+            );
+        }
+
+        foreach ($this->externalClassIndex as $class => $link) {
+            $input = preg_replace(
+                '(`(\\?)?' . preg_quote($class) . '(\\[\\])?`)',
+                '\\1[`' . $class . '`](' . $link . ')\\2',
                 $input
             );
         }

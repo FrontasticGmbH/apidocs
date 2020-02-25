@@ -246,6 +246,10 @@ class PhpDoc
             'isInterface' => $isInterface,
             'isAbstract' => !$isInterface && $entity->isAbstract(),
             'isFinal' => !$isInterface && $entity->isFinal(),
+            'extends' => !$isInterface ? ((string) $entity->getParent()) : null,
+            'implements' => ($isInterface ?
+                array_map('strval', $entity->getParents()) :
+                array_map('strval', $entity->getInterfaces())) ?: [],
             'name' => $entity->getName(),
             'fullName' => $entity->getFqsen(),
             'description' => $entity->getDocBlock() ? $entity->getDocBlock()->getDescription() : '',

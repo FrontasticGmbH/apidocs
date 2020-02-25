@@ -5,7 +5,13 @@
 ?> <?php $this->e($entity->name); ?>
 
 
-Fully Qualified: [`<?php $this->e($entity->fullName); ?>`](<?php $this->e($relativeSourceLocation); ?>)
+**Fully Qualified**: [`<?php $this->e($entity->fullName); ?>`](<?php $this->e($relativeSourceLocation); ?>)
+
+
+<?php $entity->extends && $this->e($this->linkOwn($targetFile, '**Extends**: `' . $entity->extends . '`')); ?>
+
+
+<?php count($entity->implements) ? $this->e($this->linkOwn($targetFile, '**Implements**: `' . implode('`, `', $entity->implements) . '`')) : ''; ?>
 
 
 <?php $this->w($entity->description); ?>
