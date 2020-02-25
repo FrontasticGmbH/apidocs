@@ -50,7 +50,6 @@ class PhpDoc
         $this->index = '# ' . $this->configuration->name . "\n\n" .
             wordwrap('Here you find the API documentation for the relevant classes:', 78) . "\n\n";
 
-
         try {
             $project = ProjectFactory::createInstance()->create(
                 $this->configuration->name ?? 'Test Project',
@@ -110,29 +109,7 @@ class PhpDoc
                 $this->fileTools->getRelativePath($targetFile, $this->configuration->target . '/README.md')
             );
 
-            $properties = array_values(
-                array_map(
-                    // Merge type information with information from doc block
-                    function (Property $property): Property {
-                        if (!count($property->getTypes()) && $property->getDocBlock()) {
-                            foreach ($property->getDocBlock()->getTags() as $tag) {
-                                if ($tag instanceOf Var_) {
-                                    $property->addType((string) $tag->getType());
-                                }
-                            }
-                        }
-
-                        return $property;
-                    },
-                    // Only show public properties
-                    array_filter(
-                        $entity instanceOf Interface_ ? [] : $entity->getProperties(),
-                        function (Property $property): bool {
-                            return $property->getVisibility() == 'public';
-                        }
-                    )
-                )
-            );
+            $properties = $this->getProperties($entity);
 
             $methods = array_values(
                 array_map(
@@ -224,6 +201,39 @@ class PhpDoc
             '(\\.[a-zA-Z0-9.]+$)',
             '.md',
             $this->configuration->target . str_replace($this->configuration->source, '', $sourceFile)
+        );
+    }
+
+    private function getProperties(object $entity): array
+    {
+        return array_values(
+            array_map(
+                // Merge type information with information from doc block
+                function (Property $property): object {
+                    if (!count($property->getTypes()) && $property->getDocBlock()) {
+                        foreach ($property->getDocBlock()->getTags() as $tag) {
+                            if ($tag instanceOf Var_) {
+                                $property->addType((string) $tag->getType());
+                            }
+                        }
+                    }
+
+                    return (object) [
+                        'name' => $property->getName(),
+                        'isStatic' => $property->isStatic(),
+                        'types' => $property->getTypes(),
+                        'default' => $property->getDefault(),
+                        'summary' => $property->getDocBlock() ? $property->getDocBlock()->getSummary() : '',
+                    ];
+                },
+                // Only show public properties
+                array_filter(
+                    $entity instanceOf Interface_ ? [] : $entity->getProperties(),
+                    function (Property $property): bool {
+                        return $property->getVisibility() == 'public';
+                    }
+                )
+            )
         );
     }
 }

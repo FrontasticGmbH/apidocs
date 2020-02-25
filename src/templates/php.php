@@ -22,7 +22,7 @@ Fully Qualified: [`<?php $this->e($entity->getFqsen()); ?>`](<?php $this->e($rel
 Property|Type|Default|Description
 --------|----|-------|-----------
 <?php foreach ($properties as $property): ?>
-<?php $this->e($property->isStatic() ? '`static` ' : '')?>`<?php $this->e($property->getName()); ?>`|`<?php $this->e($this->linkOwn($targetFile, implode('`, `', $property->getTypes()))); ?>`|<?php $this->e($property->getDefault() ? '`' . $property->getDefault() . '`' : ''); ?>|<?php $this->e($property->getDocBlock() ? $this->removeNewLines($property->getDocBlock()->getSummary()) : ''); ?>
+<?php $this->e($property->isStatic ? '`static` ' : '')?>`<?php $this->e($property->name); ?>`|`<?php $this->e($this->linkOwn($targetFile, implode('`, `', $property->types))); ?>`|<?php $this->e($property->default ? '`' . $property->default . '`' : ''); ?>|<?php $this->e($this->removeNewLines($property->summary)); ?>
 
 <?php endforeach; ?>
 <?php endif; ?>
