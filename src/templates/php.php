@@ -20,7 +20,7 @@
 Property|Type|Default|Description
 --------|----|-------|-----------
 <?php foreach ($properties as $property): ?>
-<?php $this->e($property->isStatic ? '`static` ' : '')?>`<?php $this->e($property->name); ?>`|`<?php $this->e($this->linkOwn($targetFile, implode('`, `', $property->types))); ?>`|<?php $this->e($property->default ? '`' . $property->default . '`' : ''); ?>|<?php $this->e($this->removeNewLines($property->summary)); ?>
+<?php $this->e($property->isStatic ? '`static` ' : '')?>`<?php $this->e($property->name); ?>`|<?php $this->e($this->linkOwn($targetFile, '`' . implode('`, `', $property->types) . '`')); ?>|<?php $this->e($property->default ? '`' . $property->default . '`' : ''); ?>|<?php $this->e($this->removeNewLines($property->summary)); ?>
 
 <?php endforeach; ?>
 <?php endif; ?>

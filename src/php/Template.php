@@ -24,6 +24,15 @@ class Template
     public function __construct(FileTools $fileTools)
     {
         $this->fileTools = $fileTools;
+        $this->externalClassRegularExpression = '(`(\\?)?(' .
+            implode(
+                '|',
+                array_map(
+                    'preg_quote',
+                    array_keys($this->externalClassIndex)
+                )
+            ) .
+            ')(\\[\\])?`)';
     }
 
     public function e(string $text) {
@@ -59,27 +68,44 @@ class Template
     }
 
     public function linkOwn(string $from, string $input): string {
-        foreach ($this->classIndex as $class => $docFile) {
-            $input = preg_replace(
-                '(`(\\?)?' . preg_quote($class) . '(\\[\\])?`)',
-                '\\1[`' . substr(strrchr($class, '\\'), 1) . '`](' . $this->fileTools->getRelativePath($docFile, $from) . ')\\2',
-                $input
-            );
+        $input = preg_replace_callback(
+            $this->classRegularExpression,
+            function (array $matches) use ($from): string {
+                return sprintf(
+                    '%s[`%s`](%s)%s',
+                    $matches[1] ?? '',
+                    substr(strrchr($matches[2], '\\'), 1),
+                    $this->fileTools->getRelativePath($this->classIndex[$matches[2]], $from),
+                    $matches[3] ?? ''
+                );
+            },
+            $input
+        );
 
-            $input = str_replace(
-                $class,
-                substr(strrchr($class, '\\'), 1),
-                $input
-            );
-        }
+        $input = str_replace(
+            array_keys($this->classIndex),
+            array_map(
+                function (string $class): string {
+                    return substr(strrchr($class, '\\'), 1);
+                },
+                array_keys($this->classIndex)
+            ),
+            $input
+        );
 
-        foreach ($this->externalClassIndex as $class => $link) {
-            $input = preg_replace(
-                '(`(\\?)?' . preg_quote($class) . '(\\[\\])?`)',
-                '\\1[`' . $class . '`](' . $link . ')\\2',
-                $input
-            );
-        }
+        $input = preg_replace_callback(
+            $this->externalClassRegularExpression,
+            function (array $matches): string {
+                return sprintf(
+                    '%s[`%s`](%s)%s',
+                    $matches[1] ?? '',
+                    $matches[2],
+                    $this->externalClassIndex[$matches[2]],
+                    $matches[3] ?? ''
+                );
+            },
+            $input
+        );
 
         return $input;
     }
@@ -88,6 +114,16 @@ class Template
     {
         $this->classIndex[$className] = $file;
         krsort($this->classIndex);
+
+        $this->classRegularExpression = '(`([^`\s]*)(' .
+            implode(
+                '|',
+                array_map(
+                    'preg_quote',
+                    array_keys($this->classIndex)
+                )
+            ) .
+            ')([^`\s]*)`)';
     }
 
     public function render(string $targetFile, object $entity, array $methods, array $properties, string $relativeSourceLocation)
