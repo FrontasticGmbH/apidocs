@@ -1,22 +1,14 @@
 # <?php
-if ($entity instanceOf \phpDocumentor\Reflection\Php\Interface_) {
-    $this->e('`interface` ');
-} else {
-    if ($entity->isAbstract()) {
-        $this->e('`abstract` ');
-    }
-
-    if ($entity->isFinal()) {
-        $this->e('`final` ');
-    }
-}
-?> <?php $this->e($entity->getName()); ?>
+    $this->e($entity->isInterface ? '`interface` ' : '');
+    $this->e($entity->isAbstract ? '`abstract` ' : '');
+    $this->e($entity->isFinal ? '`final` ' : '');
+?> <?php $this->e($entity->name); ?>
 
 
-Fully Qualified: [`<?php $this->e($entity->getFqsen()); ?>`](<?php $this->e($relativeSourceLocation); ?>)
+Fully Qualified: [`<?php $this->e($entity->fullName); ?>`](<?php $this->e($relativeSourceLocation); ?>)
 
 
-<?php $entity->getDocBlock() ? $this->w($entity->getDocBlock()->getDescription()) : ''; ?>
+<?php $this->w($entity->description); ?>
 
 <?php if (count($properties)): ?>
 Property|Type|Default|Description

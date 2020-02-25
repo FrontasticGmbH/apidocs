@@ -111,7 +111,7 @@ class PhpDoc
 
             $template->render(
                 $targetFile,
-                $entity,
+                $this->prepareEntity($entity),
                 $this->getMethods($entity),
                 $this->getProperties($entity),
                 $this->fileTools->getRelativePath($file->getPath(), $targetFile)
@@ -236,5 +236,19 @@ class PhpDoc
                 )
             )
         );
+    }
+
+    private function prepareEntity(object $entity): object
+    {
+        $isInterface = $entity instanceOf \phpDocumentor\Reflection\Php\Interface_;
+
+        return (object) [
+            'isInterface' => $isInterface,
+            'isAbstract' => !$isInterface && $entity->isAbstract(),
+            'isFinal' => !$isInterface && $entity->isFinal(),
+            'name' => $entity->getName(),
+            'fullName' => $entity->getFqsen(),
+            'description' => $entity->getDocBlock() ? $entity->getDocBlock()->getDescription() : '',
+        ];
     }
 }
