@@ -11,7 +11,8 @@ class FileTools
         $this->rootPath = $rootPath;
     }
 
-    public function makeAbsolute(string $path): string {
+    public function makeAbsolute(string $path): string
+    {
         if ($path[0] !== '/') {
             $path = $this->rootPath . '/' . $path;
         }
@@ -23,7 +24,8 @@ class FileTools
         return realpath($path);
     }
 
-    public function getRelativePath(string $source, string $target): string {
+    public function getRelativePath(string $source, string $target): string
+    {
         $absoluteTarget = array_values(array_filter(explode('/', $this->makeAbsolute($target))));
         $absoluteSource = array_values(array_filter(explode('/', $this->makeAbsolute($source))));
 

@@ -31,7 +31,9 @@ class PhpDoc
         $this->configuration = (object) Yaml::parse(file_get_contents($this->configurationFile));
 
         foreach ($this->configuration->files as $index => $fileName) {
-            $this->configuration->files[$index] = $this->fileTools->makeAbsolute(($this->configuration->source ?? '.') . '/' . $fileName);
+            $this->configuration->files[$index] = $this->fileTools->makeAbsolute(
+                ($this->configuration->source ?? '.') . '/' . $fileName
+            );
         }
         $this->configuration->source = $this->fileTools->makeAbsolute($this->configuration->source);
         $this->configuration->target = $this->fileTools->makeAbsolute($this->configuration->target);
@@ -70,7 +72,7 @@ class PhpDoc
                 if (($call['class'] === 'phpDocumentor\\Reflection\\Php\\Factory\\AbstractFactory') &&
                     ($call['function'] === 'create') &&
                     count($call['args']) &&
-                    ($call['args'][0] instanceOf LocalFile)) {
+                    ($call['args'][0] instanceof LocalFile)) {
                     $fileName = $call['args'][0]->path();
                 }
             }
@@ -146,7 +148,7 @@ class PhpDoc
                 function (Property $property): object {
                     if (!count($property->getTypes()) && $property->getDocBlock()) {
                         foreach ($property->getDocBlock()->getTags() as $tag) {
-                            if ($tag instanceOf Var_) {
+                            if ($tag instanceof Var_) {
                                 $property->addType((string) $tag->getType());
                             }
                         }
@@ -162,7 +164,7 @@ class PhpDoc
                 },
                 // Only show public properties
                 array_filter(
-                    $entity instanceOf Interface_ ? [] : $entity->getProperties(),
+                    $entity instanceof Interface_ ? [] : $entity->getProperties(),
                     function (Property $property): bool {
                         return $property->getVisibility() == 'public';
                     }
@@ -181,7 +183,7 @@ class PhpDoc
                             $description = '';
                             if ($method->getDocBlock()) {
                                 foreach ($method->getDocBlock()->getTags() as $tag) {
-                                    if ($tag instanceOf Param &&
+                                    if ($tag instanceof Param &&
                                         $tag->getVariableName() === $argument->getName()) {
                                         $description = $tag->getDescription();
                                     }
@@ -240,7 +242,7 @@ class PhpDoc
 
     private function prepareEntity(object $entity): object
     {
-        $isInterface = $entity instanceOf \phpDocumentor\Reflection\Php\Interface_;
+        $isInterface = $entity instanceof \phpDocumentor\Reflection\Php\Interface_;
 
         return (object) [
             'isInterface' => $isInterface,

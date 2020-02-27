@@ -6,6 +6,8 @@ class Template
 {
     private $classIndex = [];
 
+    private $classRegularExpression;
+
     private $externalClassIndex = [
         '\\Kore\\DataObject\\DataObject' => 'https://github.com/kore/DataObject',
         '\\Traversable' => 'https://www.php.net/manual/de/class.traversable.php',
@@ -18,6 +20,8 @@ class Template
         '\\Generator' => 'https://www.php.net/manual/de/class.generator.php',
         '\\WeakReference' => 'https://www.php.net/manual/de/class.weakreference.php',
     ];
+
+    private $externalClassRegularExpression;
 
     private $fileTools;
 
@@ -35,11 +39,13 @@ class Template
             ')(\\[\\])?`)';
     }
 
-    public function e(string $text) {
+    public function e(string $text)
+    {
         echo $text;
     }
 
-    public function w(string $text) {
+    public function w(string $text)
+    {
         echo wordwrap(
             preg_replace(
                 '((?<!' . PHP_EOL . ')' . PHP_EOL . '(?!\s*' . PHP_EOL . '))',
@@ -63,11 +69,13 @@ class Template
         return preg_replace('([\r\n\s]+)', ' ', $text);
     }
 
-    public function makeAnchor(string $heading) {
+    public function makeAnchor(string $heading)
+    {
         echo trim(preg_replace('([^A-Za-z0-9__]+)', '-', strtolower($heading)), '-');
     }
 
-    public function linkOwn(string $from, string $input): string {
+    public function linkOwn(string $from, string $input): string
+    {
         $input = preg_replace_callback(
             $this->classRegularExpression,
             function (array $matches) use ($from): string {
@@ -126,8 +134,13 @@ class Template
             ')([^`\s]*)`)';
     }
 
-    public function render(string $targetFile, object $entity, array $methods, array $properties, string $relativeSourceLocation)
-    {
+    public function render(
+        string $targetFile,
+        object $entity,
+        array $methods,
+        array $properties,
+        string $relativeSourceLocation
+    ) {
         ob_start();
         include(__DIR__ . '/../templates/php.php');
         file_put_contents(
