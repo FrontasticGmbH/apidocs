@@ -14,6 +14,6 @@ install:
   - composer install
 
 script:
-  - vendor/bin/phpunit
+  # - vendor/bin/phpunit
   - vendor/bin/phpstan analyse
   - vendor/bin/phpcs --extensions=php --standard=PSR2 src/php/
