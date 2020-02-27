@@ -1,0 +1,19 @@
+language: php
+php:
+  - '7.2'
+  - '7.3'
+  - '7.4'
+jobs:
+  allow_failures:
+  - php: '7.4'
+
+notifications:
+  email: false
+
+install:
+  - composer install
+
+script:
+  - vendor/bin/phpunit
+  - vendor/bin/phpstan analyse
+  - vendor/bin/phpcs --extensions=php --standard=PSR2 src/php/

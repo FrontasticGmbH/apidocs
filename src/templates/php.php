@@ -1,4 +1,5 @@
 # <?php
+// @codingStandardsIgnoreStart
     $this->e($entity->isInterface ? '`interface` ' : '');
     $this->e($entity->isAbstract ? '`abstract` ' : '');
     $this->e($entity->isFinal ? '`final` ' : '');

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Frontastic Library Common" basedir="./" default="test">
+
+    <property name="frontastic_basedir" value="${basedir}/../../.." />
+
+    <!--
+        Include local project properties.
+    -->
+    <property file="${basedir}/environment.local" />
+    <property file="${basedir}/../../environment.local" />
+    <property file="${frontastic_basedir}/environment.local" />
+    <property file="${basedir}/environment" />
+    <property file="${basedir}/../../environment" />
+    <property file="${frontastic_basedir}/environment" />
+
+
+    <!--
+        Import main target defintions (extension points)
+    -->
+    <import file="${frontastic_basedir}/paas/integration/main.xml" />
+
+    <!--
+        Enable used modules
+    -->
+    <import file="${frontastic_basedir}/paas/integration/build-commons/modules/composer.xml" />
+    <import file="${frontastic_basedir}/paas/integration/build-commons/modules/phpunit.xml" />
+    <import file="${frontastic_basedir}/paas/integration/build-commons/modules/checkstyle.xml" />
+    <import file="${frontastic_basedir}/paas/integration/build-commons/modules/pdepend.xml" />
+    <import file="${frontastic_basedir}/paas/integration/build-commons/modules/phpcpd.xml" />
+    <import file="${frontastic_basedir}/paas/integration/build-commons/modules/phpmd.xml" />
+    <import file="${frontastic_basedir}/paas/integration/build-commons/modules/phpstan.xml" />
+    <import file="${frontastic_basedir}/paas/integration/build-commons/modules/apidocs.xml" />
+</project>
