@@ -29,5 +29,9 @@
     <import file="${frontastic_basedir}/paas/integration/build-commons/modules/phpcpd.xml" />
     <import file="${frontastic_basedir}/paas/integration/build-commons/modules/phpmd.xml" />
     <import file="${frontastic_basedir}/paas/integration/build-commons/modules/phpstan.xml" />
-    <import file="${frontastic_basedir}/paas/integration/build-commons/modules/apidocs.xml" />
+
+    <target name="apidocs" extensionOf="-package:main~hook">
+        <exec executable="${basedir}/bin/apidocs" dir="${basedir}">
+        </exec>
+    </target>
 </project>
