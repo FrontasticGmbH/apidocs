@@ -18,4 +18,9 @@ class Request extends DataObject
         $this->url = $url;
         $this->bodyType = $bodyType;
     }
+
+    public function parseTypes(TypeParser $parser)
+    {
+        $this->bodyType = $parser->parse($this->bodyType);
+    }
 }

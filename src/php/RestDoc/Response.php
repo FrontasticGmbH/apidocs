@@ -18,4 +18,9 @@ class Response extends DataObject
         $this->bodyType = $bodyType;
         $this->description = $description;
     }
+
+    public function parseTypes(TypeParser $parser)
+    {
+        $this->bodyType = $parser->parse($this->bodyType);
+    }
 }

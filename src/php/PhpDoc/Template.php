@@ -107,8 +107,6 @@ class Template
     public function render(
         string $targetFile,
         object $entity,
-        array $methods,
-        array $properties,
         string $relativeSourceLocation
     ) {
         ob_start();

@@ -20,16 +20,27 @@ class RestDoc
 
     private $fileTools;
 
+    private $typeParser;
+
     private $configuration;
 
     private $index = '';
 
-    public function __construct(string $configurationFile)
+    public function __construct(string $configurationFile, RestDoc\TypeParser $typeParser, array $formatter = [])
     {
         $this->configurationFile = realpath($configurationFile);
         $this->fileTools = new FileTools(dirname(($this->configurationFile)));
+        $this->typeParser = $typeParser;
 
         $this->configuration = (object) Yaml::parse(file_get_contents($this->configurationFile));
+
+        $this->formatter = array_merge(
+            [
+                'JSON' => new RestDoc\Formatter\TypedJson(),
+                'TypedJSON' => new RestDoc\Formatter\TypedJson(),
+            ],
+            $formatter
+        );
 
         foreach ($this->configuration->http as $index => $fileName) {
             $this->configuration->http[$index] = $this->fileTools->makeAbsolute(
@@ -104,6 +115,8 @@ class RestDoc
                 trim(str_replace($this->configuration->nameSpace, '', $entity->getFqsen()), '\\'),
                 $this->fileTools->getRelativePath($targetFile, $this->configuration->target . '/README.md')
             );
+
+            $formatter = $this->getFormatter($entity);
 
             $paths = $this->getPaths($entity);
             foreach ($paths as $path) {
@@ -217,6 +230,31 @@ class RestDoc
         }
 
         // Most amazing parser EVAR:
-        return new $tagName(...array_map('trim', preg_split('(\\s*,\\s*)', trim($tag->getDescription(), '()'))));
+        $tag = new $tagName(...array_map('trim', preg_split('(\\s*,\\s*)', trim($tag->getDescription(), '()'))));
+        $tag->parseTypes($this->typeParser);
+
+        return $tag;
+    }
+
+    private function getFormatter(object $entity): RestDoc\Formatter
+    {
+        $format = 'JSON';
+        if ($entity->getDocBlock() &&
+            ($tags = $entity->getDocBlock()->getTags())) {
+            foreach ($tags as $tag) {
+                $tag = $this->createTag($tag);
+
+                if ($tag instanceof RestDoc\Format) {
+                    $format = $tag->format;
+                    break;
+                }
+            }
+        }
+
+        if (!isset($this->formatter[$format])) {
+            throw new \OutOfBoundsException('Unknown body formatter ' . $format);
+        }
+
+        return $this->formatter[$format];
     }
 }

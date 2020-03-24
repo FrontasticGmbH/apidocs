@@ -23,6 +23,8 @@ class PhpDoc
 
     private $index = '';
 
+    private $classes = [];
+
     public function __construct(string $configurationFile)
     {
         $this->configurationFile = realpath($configurationFile);
@@ -111,13 +113,18 @@ class PhpDoc
                 $this->fileTools->getRelativePath($targetFile, $this->configuration->target . '/README.md')
             );
 
-            $template->render(
-                $targetFile,
-                $this->prepareEntity($entity),
+            $entity = $this->prepareEntity(
+                $entity,
                 $this->getMethods($entity),
                 $this->getProperties($entity),
+            );
+
+            $template->render(
+                $targetFile,
+                $entity,
                 $this->fileTools->getRelativePath($file->getPath(), $targetFile)
             );
+            $this->classes[$entity->fullName] = $entity;
         }
     }
 
@@ -129,6 +136,15 @@ class PhpDoc
     public function getConfiguration(): object
     {
         return $this->configuration;
+    }
+
+    public function getEntity(string $fullName): object
+    {
+        if (!isset($this->classes[$fullName])) {
+            throw new \OutOfBoundsException('Unknown entity ' . $fullName);
+        }
+
+        return $this->classes[$fullName];
     }
 
     private function getTargetFileName(string $sourceFile): string
@@ -240,7 +256,7 @@ class PhpDoc
         );
     }
 
-    private function prepareEntity(object $entity): object
+    private function prepareEntity(object $entity, array $methods, array $properties): object
     {
         $isInterface = $entity instanceof \phpDocumentor\Reflection\Php\Interface_;
 
@@ -253,8 +269,10 @@ class PhpDoc
                 array_map('strval', $entity->getParents()) :
                 array_map('strval', $entity->getInterfaces())) ?: [],
             'name' => $entity->getName(),
-            'fullName' => $entity->getFqsen(),
-            'description' => $entity->getDocBlock() ? $entity->getDocBlock()->getDescription() : '',
+            'fullName' => (string) $entity->getFqsen(),
+            'description' => $entity->getDocBlock() ? (string) $entity->getDocBlock()->getDescription() : '',
+            'methods' => $methods,
+            'properties' => $properties,
         ];
     }
 }

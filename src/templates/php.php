@@ -17,24 +17,24 @@
 
 <?php $this->w($entity->description); ?>
 
-<?php if (count($properties)): ?>
+<?php if (count($entity->properties)): ?>
 Property|Type|Default|Description
 --------|----|-------|-----------
-<?php foreach ($properties as $property): ?>
+<?php foreach ($entity->properties as $property): ?>
 <?php $this->e($property->isStatic ? '`static` ' : '')?>`<?php $this->e($property->name); ?>`|<?php $this->e($this->linkOwn($targetFile, '`' . implode('`, `', $property->types) . '`')); ?>|<?php $this->e($property->default ? '`' . $property->default . '`' : ''); ?>|<?php $this->e($this->removeNewLines($property->summary)); ?>
 
 <?php endforeach; ?>
 <?php endif; ?>
 
-<?php if (count($methods)): ?>
+<?php if (count($entity->methods)): ?>
 ## Methods
 
-<?php foreach ($methods as $method): ?>
+<?php foreach ($entity->methods as $method): ?>
 * [<?php $this->e($method->name) ?>()](#<?php $this->makeAnchor($method->name) ?>)
 <?php endforeach; ?>
 
 
-<?php foreach ($methods as $method): ?>
+<?php foreach ($entity->methods as $method): ?>
 ### <?php $this->e($method->name) ?>()
 
 
