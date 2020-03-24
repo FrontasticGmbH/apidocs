@@ -49,7 +49,7 @@ class PhpDoc
             mkdir($this->configuration->target, 0755, true);
         }
 
-        $this->index = '# ' . $this->configuration->name . "\n\n" .
+        $this->index = '##  API Documentation' . "\n\n" .
             wordwrap('Here you find the API documentation for the relevant classes:', 78) . "\n\n";
 
         try {

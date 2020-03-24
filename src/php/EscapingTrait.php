@@ -4,12 +4,12 @@ namespace Frontastic\Apidocs;
 
 trait EscapingTrait
 {
-    public function e(string $text)
+    public function e(?string $text)
     {
         echo $text;
     }
 
-    public function w(string $text)
+    public function w(?string $text)
     {
         echo wordwrap(
             preg_replace(
@@ -29,7 +29,7 @@ trait EscapingTrait
         );
     }
 
-    public function removeNewLines(string $text): string
+    public function removeNewLines(?string $text): string
     {
         return preg_replace('([\r\n\s]+)', ' ', $text);
     }
