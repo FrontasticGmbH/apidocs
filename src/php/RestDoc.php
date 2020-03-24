@@ -51,7 +51,7 @@ class RestDoc
         }
 
         $this->index = '## HTTP API Documentation' . "\n\n" .
-            'Download the Swagger File' . "\n\n";
+            'Download the [Swagger File](swagger.yml)' . "\n\n";
 
         try {
             $project = ProjectFactory::createInstance()->create(
@@ -82,6 +82,14 @@ class RestDoc
             exit(2);
         }
 
+        $swagger = [
+            'openapi' => '3.0.0',
+            'info' => [
+                'title' => $this->configuration->name ?? 'Test Project',
+            ],
+            'paths' => [],
+        ];
+
         foreach ($project->getFiles() as $file) {
             $entity = array_values($file->getClasses())[0] ?? array_values($file->getInterfaces())[0] ?? null;
             if (!$entity) {
@@ -97,13 +105,36 @@ class RestDoc
                 $this->fileTools->getRelativePath($targetFile, $this->configuration->target . '/README.md')
             );
 
+            $paths = $this->getPaths($entity);
+            foreach ($paths as $path) {
+                $responses = [];
+                foreach ($path->responses as $response) {
+                    $responses[(string) $response->status] = [
+                        'description' => $response->description,
+                        'content' => $response->bodyType,
+                    ];
+                }
+
+                $swagger['paths'][$path->request->url][$path->request->method] = [
+                    'summary' => $path->summary,
+                    'description' => $path->description,
+                    'requestBody' => $path->request->bodyType,
+                    'responses' => $responses,
+                ];
+            }
+
             $template->render(
                 $targetFile,
                 $this->prepareEntity($entity),
-                $this->getPaths($entity),
+                $paths,
                 $this->fileTools->getRelativePath($file->getPath(), $targetFile)
             );
         }
+
+        file_put_contents(
+            $this->configuration->target . '/swagger.yml',
+            Yaml::dump($swagger, 12, 2, Yaml::DUMP_OBJECT_AS_MAP)
+        );
     }
 
     public function getIndex(): string
@@ -138,7 +169,6 @@ class RestDoc
                             ($tags = $method->getDocBlock()->getTags())) {
                             foreach ($tags as $tag) {
                                 $tag = $this->createTag($tag);
-                                var_dump($tag);
 
                                 if ($tag && $tag instanceof RestDoc\Request) {
                                     $request = $tag;
@@ -149,8 +179,8 @@ class RestDoc
                         }
 
                         return (object) [
-                            'summary' => $method->getDocBlock() ? $method->getDocBlock()->getSummary() : null,
-                            'description' => $method->getDocBlock() ? $method->getDocBlock()->getDescription() : null,
+                            'summary' => $method->getDocBlock() ? (string) $method->getDocBlock()->getSummary() : null,
+                            'description' => $method->getDocBlock() ? (string) $method->getDocBlock()->getDescription() : null,
                             'request' => $request,
                             'responses' => $responses,
                         ];
