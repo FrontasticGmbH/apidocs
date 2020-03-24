@@ -1,6 +1,9 @@
 <?php
 
-namespace Frontastic\Apidocs;
+namespace Frontastic\Apidocs\PhpDoc;
+
+use Frontastic\Apidocs\EscapingTrait;
+use Frontastic\Apidocs\FileTools;
 
 class Template
 {
@@ -25,6 +28,8 @@ class Template
 
     private $fileTools;
 
+    use EscapingTrait;
+
     public function __construct(FileTools $fileTools)
     {
         $this->fileTools = $fileTools;
@@ -37,41 +42,6 @@ class Template
                 )
             ) .
             ')(\\[\\])?`)';
-    }
-
-    public function e(string $text)
-    {
-        echo $text;
-    }
-
-    public function w(string $text)
-    {
-        echo wordwrap(
-            preg_replace(
-                '((?<!' . PHP_EOL . ')' . PHP_EOL . '(?!\s*' . PHP_EOL . '))',
-                ' ',
-                preg_replace(
-                    '(^\s+$)m',
-                    '',
-                    preg_replace(
-                        '(\r\n|\r|\n)',
-                        PHP_EOL,
-                        $text
-                    )
-                )
-            ),
-            78
-        );
-    }
-
-    public function removeNewLines(string $text): string
-    {
-        return preg_replace('([\r\n\s]+)', ' ', $text);
-    }
-
-    public function makeAnchor(string $heading)
-    {
-        echo trim(preg_replace('([^A-Za-z0-9__]+)', '-', strtolower($heading)), '-');
     }
 
     public function linkOwn(string $from, string $input): string
@@ -142,7 +112,7 @@ class Template
         string $relativeSourceLocation
     ) {
         ob_start();
-        include(__DIR__ . '/../templates/php.php');
+        include(__DIR__ . '/../../templates/php.php');
         file_put_contents(
             $targetFile,
             preg_replace(

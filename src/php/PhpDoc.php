@@ -42,7 +42,7 @@ class PhpDoc
 
     public function render(): void
     {
-        $template = new Template($this->fileTools);
+        $template = new PhpDoc\Template($this->fileTools);
 
         include $this->configuration->autoloader;
         if (!file_exists($this->configuration->target)) {
