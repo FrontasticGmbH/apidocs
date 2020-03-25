@@ -2,9 +2,10 @@
 
 namespace Frontastic\Apidocs\RestDoc;
 
-use Kore\DataObject\DataObject;
+use Frontastic\Apidocs\Tag;
+use Frontastic\Apidocs\TypeParser;
 
-class Request extends DataObject
+class Request extends Tag
 {
     public $method;
 
@@ -19,7 +20,7 @@ class Request extends DataObject
         $this->bodyType = $bodyType;
     }
 
-    public function parseTypes(TypeParser $parser, string $fileName)
+    public function parseTypes(TypeParser $parser, ?string $fileName = null)
     {
         $this->bodyType = $parser->parse($this->bodyType, $fileName);
     }

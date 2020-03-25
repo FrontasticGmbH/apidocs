@@ -26,7 +26,7 @@ class RestDoc
 
     private $index = '';
 
-    public function __construct(string $configurationFile, RestDoc\TypeParser $typeParser, array $formatter = [])
+    public function __construct(string $configurationFile, TypeParser $typeParser, array $formatter = [])
     {
         $this->configurationFile = realpath($configurationFile);
         $this->fileTools = new FileTools(dirname(($this->configurationFile)));
@@ -42,6 +42,7 @@ class RestDoc
             $formatter
         );
 
+        $this->configuration->http = $this->configuration->http ?? [];
         foreach ($this->configuration->http as $index => $fileName) {
             $this->configuration->http[$index] = $this->fileTools->makeAbsolute(
                 ($this->configuration->source ?? '.') . '/' . $fileName

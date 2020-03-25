@@ -11,6 +11,7 @@ use phpDocumentor\Reflection\Php\Method;
 use phpDocumentor\Reflection\Php\Argument;
 use phpDocumentor\Reflection\DocBlock\Tags\Var_;
 use phpDocumentor\Reflection\DocBlock\Tags\Param;
+use phpDocumentor\Reflection\DocBlock\Tags\BaseTag;
 use phpDocumentor\Reflection\File\LocalFile;
 
 class PhpDoc
@@ -19,16 +20,19 @@ class PhpDoc
 
     private $fileTools;
 
+    private $typeParser;
+
     private $configuration;
 
     private $index = '';
 
     private $classes = [];
 
-    public function __construct(string $configurationFile)
+    public function __construct(string $configurationFile, TypeParser $typeParser)
     {
         $this->configurationFile = realpath($configurationFile);
         $this->fileTools = new FileTools(dirname(($this->configurationFile)));
+        $this->typeParser = $typeParser;
 
         $this->configuration = (object) Yaml::parse(file_get_contents($this->configurationFile));
 
@@ -115,7 +119,7 @@ class PhpDoc
 
             $entity = $this->prepareEntity(
                 $entity,
-                $this->getMethods($entity),
+                $this->getMethods($entity, $file->getPath()),
                 $this->getProperties($entity),
             );
 
@@ -189,11 +193,11 @@ class PhpDoc
         );
     }
 
-    private function getMethods(object $entity): array
+    private function getMethods(object $entity, string $fileName): array
     {
         return array_values(
             array_map(
-                function (Method $method): object {
+                function (Method $method) use ($fileName): object {
                     $arguments = array_map(
                         function (Argument $argument) use ($method): object {
                             $description = '';
@@ -216,6 +220,16 @@ class PhpDoc
                         },
                         $method->getArguments()
                     );
+
+                    $returnType = (string) $method->getReturnType();
+                    if ($method->getDocBlock()) {
+                        foreach ($method->getDocBlock()->getTags() as $tag) {
+                            $tag = $this->createTag($tag, $fileName);
+                            if ($tag && $tag instanceof PhpDoc\Return_) {
+                                $returnType = $tag;
+                            }
+                        }
+                    }
 
                     return (object) [
                         'name' => $method->getName(),
@@ -243,7 +257,7 @@ class PhpDoc
                             ) .
                             "\n): " . $method->getReturnType()
                         ),
-                        'return' => (string) $method->getReturnType(),
+                        'return' => $returnType,
                     ];
                 },
                 array_filter(
@@ -274,5 +288,30 @@ class PhpDoc
             'methods' => $methods,
             'properties' => $properties,
         ];
+    }
+
+    private function createTag(BaseTag $tag, ?string $fileName = null): ?object
+    {
+        $tagName = preg_replace(
+            '(^(?:Docs|Apidocs)\\\\)',
+            __CLASS__ . '\\',
+            $tag->getName()
+        );
+
+        // Mapping for class names which are invalid in PHP
+        str_replace(
+            ['Return'],
+            ['Return_'],
+            $tagName
+        );
+
+        if (!class_exists($tagName)) {
+            return null;
+        }
+
+        $tag = new $tagName(trim($tag->getDescription()));
+        $tag->parseTypes($this->typeParser, $fileName);
+
+        return $tag;
     }
 }

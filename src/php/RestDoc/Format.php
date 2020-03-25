@@ -2,18 +2,15 @@
 
 namespace Frontastic\Apidocs\RestDoc;
 
-use Kore\DataObject\DataObject;
+use Frontastic\Apidocs\Tag;
+use Frontastic\Apidocs\TypeParser;
 
-class Format extends DataObject
+class Format extends Tag
 {
     public $format;
 
     public function __construct(string $format)
     {
         $this->format = $format;
-    }
-
-    public function parseTypes(TypeParser $parser)
-    {
     }
 }

@@ -14,12 +14,13 @@ if (!file_exists($configurationFile)) {
 }
 
 try {
-    $phpDoc = new PhpDoc($configurationFile);
+    $typeParser = new TypeParser();
+    $phpDoc = new PhpDoc($configurationFile, $typeParser);
 
     touch($phpDoc->getConfiguration()->target . '/README.md');
     $phpDoc->render();
 
-    $restDoc = new RestDoc($configurationFile, new RestDoc\TypeParser($phpDoc));
+    $restDoc = new RestDoc($configurationFile, $typeParser);
     $restDoc->render();
 
     file_put_contents(
