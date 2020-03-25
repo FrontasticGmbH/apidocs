@@ -118,7 +118,7 @@ class RestDoc
 
             $formatter = $this->getFormatter($entity);
 
-            $paths = $this->getPaths($entity);
+            $paths = $this->getPaths($entity, $file->getPath());
             foreach ($paths as $path) {
                 $responses = [];
                 foreach ($path->responses as $response) {
@@ -169,19 +169,19 @@ class RestDoc
         );
     }
 
-    private function getPaths(object $entity): array
+    private function getPaths(object $entity, string $fileName): array
     {
         return array_values(
             array_filter(
                 array_map(
-                    function (Method $method): object {
+                    function (Method $method) use ($fileName): object {
                         $request = null;
                         $responses = [];
 
                         if ($method->getDocBlock() &&
                             ($tags = $method->getDocBlock()->getTags())) {
                             foreach ($tags as $tag) {
-                                $tag = $this->createTag($tag);
+                                $tag = $this->createTag($tag, $fileName);
 
                                 if ($tag && $tag instanceof RestDoc\Request) {
                                     $request = $tag;
@@ -217,7 +217,7 @@ class RestDoc
         ];
     }
 
-    private function createTag(BaseTag $tag): ?object
+    private function createTag(BaseTag $tag, ?string $fileName = null): ?object
     {
         $tagName = preg_replace(
             '(^(?:Docs|Apidocs)\\\\)',
@@ -231,7 +231,7 @@ class RestDoc
 
         // Most amazing parser EVAR:
         $tag = new $tagName(...array_map('trim', preg_split('(\\s*,\\s*)', trim($tag->getDescription(), '()'))));
-        $tag->parseTypes($this->typeParser);
+        $tag->parseTypes($this->typeParser, $fileName);
 
         return $tag;
     }
@@ -242,7 +242,7 @@ class RestDoc
         if ($entity->getDocBlock() &&
             ($tags = $entity->getDocBlock()->getTags())) {
             foreach ($tags as $tag) {
-                $tag = $this->createTag($tag);
+                $tag = $this->createTag($tag, null);
 
                 if ($tag instanceof RestDoc\Format) {
                     $format = $tag->format;

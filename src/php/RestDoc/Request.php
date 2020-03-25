@@ -19,8 +19,8 @@ class Request extends DataObject
         $this->bodyType = $bodyType;
     }
 
-    public function parseTypes(TypeParser $parser)
+    public function parseTypes(TypeParser $parser, string $fileName)
     {
-        $this->bodyType = $parser->parse($this->bodyType);
+        $this->bodyType = $parser->parse($this->bodyType, $fileName);
     }
 }
