@@ -10,7 +10,8 @@
     "require": {
         "phpdocumentor/reflection-docblock": "^5.0",
         "phpdocumentor/reflection": "^4.0",
-        "symfony/yaml": "^4.4"
+        "symfony/yaml": "^4.4",
+        "kore/data-object": "@stable"
     },
     "require-dev": {
         "pdepend/pdepend": "@stable",
