@@ -19,6 +19,7 @@ class TypeParserTest extends \PHPUnit\Framework\TestCase
             ['?string[]', '?string[]'],
             ['?string|int', '?string|int'],
             ['[string]', '[string]'],
+            ['?[string]', '?[string]'],
             ['[string, int]', '[string, int]'],
             ['[?string, int, ?int]', '[?string, int, ?int]'],
             ['[string, int, ?int|string]', '[string, int, ?int|string]'],

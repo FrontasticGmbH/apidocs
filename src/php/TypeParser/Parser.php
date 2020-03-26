@@ -23,8 +23,6 @@ class Parser
      *  ]
      * </code>
      *
-     * [1] http://en.bbcodepedia.org/bbcode/Pumping_lemma_for_context-free_languages
-     *
      * @var array
      */
     protected $shifts = [
@@ -124,6 +122,8 @@ class Parser
      */
     public function parse(array $tokens): Node
     {
+        $this->documentStack = [];
+
         while (($token = array_shift($tokens)) !== null) {
             // First shift given token by the defined reduction methods
             $node = false;
@@ -388,6 +388,7 @@ class Parser
     private function reduceType(Node $node): Node
     {
         if (count($this->documentStack) !== 1) {
+            var_dump($this->documentStack);
             throw new \RuntimeException('Expected single node left on document stack at EOF.');
         }
 

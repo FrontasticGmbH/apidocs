@@ -28,15 +28,22 @@ class TypeParser
                 throw new \RuntimeException('Cannot determine namespace of file ' . $fileName);
             }
             $namespace = $matches['namespace'];
-
             $context = $this->contextFactory->createForNamespace($namespace, file_get_contents($fileName));
         }
 
-        $type = $this->parser->parse(
-            $this->tokenizer->tokenizeString($type)
-        );
+        try {
+            $typeAst = $this->parser->parse(
+                $this->tokenizer->tokenizeString($type)
+            );
+        } catch (\Exception $e) {
+            throw new \RuntimeException(
+                "Error parsing type $type in file $fileName: " . $e->getMessage(),
+                503,
+                $e
+            );
+        }
 
         // $type = $this->typeResolver->resolve($type, $context);
-        return $type;
+        return $typeAst;
     }
 }

@@ -114,12 +114,12 @@ class Tokenizer
      */
     public function tokenizeString(string $string): array
     {
-        $line     = 1;
+        $line = 1;
         $position = 1;
-        $tokens   = array();
+        $tokens = [];
 
         // Normalize newlines
-        $string = preg_replace('([\x20\\t]*(?:\\r\\n|\\r|\\n))', "\n", $string);
+        $string = preg_replace('([\x20\\t]*(?:\\r\\n|\\r|\\n))', "\n", trim($string));
 
         while (strlen($string) > 0) {
             foreach ($this->tokens as $tokenType) {
