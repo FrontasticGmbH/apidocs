@@ -9,10 +9,10 @@ class Type extends Node
     /**
      * @var Node
      */
-    public $content;
+    public $type;
 
     public function __toString(): string
     {
-        return (string) $this->content;
+        return (string) $this->type;
     }
 }

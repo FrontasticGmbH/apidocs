@@ -2,6 +2,9 @@
 
 namespace Frontastic\Apidocs;
 
+use \phpDocumentor\Reflection\TypeResolver;
+use \phpDocumentor\Reflection\Types;
+
 use Frontastic\Apidocs\PhpDoc;
 
 class TypeParser
@@ -13,8 +16,8 @@ class TypeParser
 
     public function __construct()
     {
-        $this->typeResolver = new \phpDocumentor\Reflection\TypeResolver();
-        $this->contextFactory = new \phpDocumentor\Reflection\Types\ContextFactory();
+        $this->typeResolver = new TypeResolver();
+        $this->contextFactory = new Types\ContextFactory();
 
         $this->tokenizer = new TypeParser\Tokenizer();
         $this->parser = new TypeParser\Parser();
@@ -43,7 +46,38 @@ class TypeParser
             );
         }
 
-        // $type = $this->typeResolver->resolve($type, $context);
-        return $typeAst;
+        return $this->resolveTypes($typeAst, $context);
+    }
+
+    private function resolveTypes(TypeParser\Node $node, ?Types\Context $context = null): TypeParser\Node
+    {
+        if ($node instanceof TypeParser\Node\Identifier) {
+            $node->identifier = (string) $this->typeResolver->resolve($node->identifier, $context);
+        }
+
+        if ($node instanceof TypeParser\Node\Generic) {
+            $node->identifier->identifier = (string) $this->typeResolver->resolve(
+                $node->identifier->identifier,
+                $context
+            );
+        }
+
+        if (isset($node->type)) {
+            $this->resolveTypes($node->type);
+        }
+
+        if (isset($node->types)) {
+            foreach ($node->types as $type) {
+                $this->resolveTypes($type);
+            }
+        }
+
+        if (isset($node->properties)) {
+            foreach ($node->properties as $property) {
+                $this->resolveTypes($property);
+            }
+        }
+
+        return $node;
     }
 }

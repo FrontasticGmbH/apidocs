@@ -392,7 +392,7 @@ class Parser
             throw new \RuntimeException('Expected single node left on document stack at EOF.');
         }
 
-        $node->content = array_shift($this->documentStack);
+        $node->type = array_shift($this->documentStack);
         return $node;
     }
 }
