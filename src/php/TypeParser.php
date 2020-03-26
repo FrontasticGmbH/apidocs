@@ -63,18 +63,18 @@ class TypeParser
         }
 
         if (isset($node->type)) {
-            $this->resolveTypes($node->type);
+            $this->resolveTypes($node->type, $context);
         }
 
         if (isset($node->types)) {
             foreach ($node->types as $type) {
-                $this->resolveTypes($type);
+                $this->resolveTypes($type, $context);
             }
         }
 
         if (isset($node->properties)) {
             foreach ($node->properties as $property) {
-                $this->resolveTypes($property);
+                $this->resolveTypes($property, $context);
             }
         }
 

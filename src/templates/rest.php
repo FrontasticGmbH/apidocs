@@ -16,10 +16,7 @@
 ### Request Body
 
 
-```
-<?php $this->e($path->request->bodyType); ?>
-
-```
+<?php $this->renderType($path->request->bodyType); ?>
 
 
 ### Responses
@@ -31,10 +28,7 @@ Status: <?php $this->e($response->status); ?>
 <?php $this->w($path->description); ?>
 
 
-```
-<?php $this->e($response->bodyType); ?>
-
-```
+<?php $this->renderType($response->bodyType); ?>
 
 
 <?php endforeach; ?>
