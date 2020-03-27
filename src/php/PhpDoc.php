@@ -11,7 +11,7 @@ use phpDocumentor\Reflection\Php\Method;
 use phpDocumentor\Reflection\Php\Argument;
 use phpDocumentor\Reflection\DocBlock\Tags\Var_;
 use phpDocumentor\Reflection\DocBlock\Tags\Param;
-use phpDocumentor\Reflection\DocBlock\Tags\BaseTag;
+use phpDocumentor\Reflection\DocBlock\Tag as BaseTag;
 use phpDocumentor\Reflection\File\LocalFile;
 
 class PhpDoc
@@ -120,7 +120,7 @@ class PhpDoc
             $entity = $this->prepareEntity(
                 $entity,
                 $this->getMethods($entity, $file->getPath()),
-                $this->getProperties($entity),
+                $this->getProperties($entity, $file->getPath()),
             );
 
             $template->render(
@@ -142,13 +142,9 @@ class PhpDoc
         return $this->configuration;
     }
 
-    public function getEntity(string $fullName): object
+    public function getClasses(): array
     {
-        if (!isset($this->classes[$fullName])) {
-            throw new \OutOfBoundsException('Unknown entity ' . $fullName);
-        }
-
-        return $this->classes[$fullName];
+        return $this->classes;
     }
 
     private function getTargetFileName(string $sourceFile): string
@@ -160,16 +156,26 @@ class PhpDoc
         );
     }
 
-    private function getProperties(object $entity): array
+    private function getProperties(object $entity, string $fileName): array
     {
         return array_values(
             array_map(
                 // Merge type information with information from doc block
-                function (Property $property): object {
-                    if (!count($property->getTypes()) && $property->getDocBlock()) {
+                function (Property $property) use ($fileName): object {
+                    $type = null;
+                    if (count($property->getTypes())) {
+                        $type = $this->typeParser->parse((string) $property->getTypes(), $fileName);
+                    }
+
+                    if ($property->getDocBlock()) {
                         foreach ($property->getDocBlock()->getTags() as $tag) {
-                            if ($tag instanceof Var_) {
-                                $property->addType((string) $tag->getType());
+                            if (!$type && $tag instanceof Var_) {
+                                $type = $this->typeParser->parse((string) $tag, $fileName);
+                            }
+
+                            $tag = $this->createTag($tag, $fileName);
+                            if ($tag && $tag instanceof PhpDoc\VarTag) {
+                                $type = $tag->type;
                             }
                         }
                     }
@@ -177,7 +183,7 @@ class PhpDoc
                     return (object) [
                         'name' => $property->getName(),
                         'isStatic' => $property->isStatic(),
-                        'types' => $property->getTypes(),
+                        'type' => $type,
                         'default' => $property->getDefault(),
                         'summary' => $property->getDocBlock() ? $property->getDocBlock()->getSummary() : '',
                     ];
@@ -199,19 +205,26 @@ class PhpDoc
             array_map(
                 function (Method $method) use ($fileName): object {
                     $arguments = array_map(
-                        function (Argument $argument) use ($method): object {
+                        function (Argument $argument) use ($method, $fileName): object {
                             $description = '';
+                            $type = $this->typeParser->parse((string) $argument->getType(), $fileName);
                             if ($method->getDocBlock()) {
                                 foreach ($method->getDocBlock()->getTags() as $tag) {
                                     if ($tag instanceof Param &&
                                         $tag->getVariableName() === $argument->getName()) {
                                         $description = $tag->getDescription();
                                     }
+
+                                    $tag = $this->createTag($tag, $fileName);
+                                    if ($tag && $tag instanceof PhpDoc\ParamTag &&
+                                        $tag->name === $argument->getName()) {
+                                        $type = $tag->type;
+                                    }
                                 }
                             }
                             return (object) [
                                 'name' => $argument->getName(),
-                                'type' => $argument->getType(),
+                                'type' => $type,
                                 'default' => $argument->getDefault(),
                                 'isByReference' => $argument->isByReference(),
                                 'isVariadic' => $argument->isVariadic(),
@@ -225,8 +238,8 @@ class PhpDoc
                     if ($method->getDocBlock()) {
                         foreach ($method->getDocBlock()->getTags() as $tag) {
                             $tag = $this->createTag($tag, $fileName);
-                            if ($tag && $tag instanceof PhpDoc\Return_) {
-                                $returnType = $tag;
+                            if ($tag && $tag instanceof PhpDoc\ReturnTag) {
+                                $returnType = $tag->type;
                             }
                         }
                     }
@@ -295,14 +308,7 @@ class PhpDoc
         $tagName = preg_replace(
             '(^(?:Docs|Apidocs)\\\\)',
             __CLASS__ . '\\',
-            $tag->getName()
-        );
-
-        // Mapping for class names which are invalid in PHP
-        str_replace(
-            ['Return'],
-            ['Return_'],
-            $tagName
+            $tag->getName() . 'Tag'
         );
 
         if (!class_exists($tagName)) {

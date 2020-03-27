@@ -5,19 +5,19 @@ namespace Frontastic\Apidocs\RestDoc;
 use Frontastic\Apidocs\Tag;
 use Frontastic\Apidocs\TypeParser;
 
-class Response extends Tag
+class RequestTag extends Tag
 {
-    public $status;
+    public $method;
+
+    public $url;
 
     public $bodyType;
 
-    public $description;
-
-    public function __construct(string $status, string $bodyType, ?string $description = null)
+    public function __construct(string $method, string $url, string $bodyType)
     {
-        $this->status = (int) $status;
+        $this->method = $method;
+        $this->url = $url;
         $this->bodyType = $bodyType;
-        $this->description = $description;
     }
 
     public function parseTypes(TypeParser $parser, ?string $fileName = null)

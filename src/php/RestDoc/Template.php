@@ -10,11 +10,14 @@ class Template
 {
     private $fileTools;
 
+    private $classMap;
+
     use EscapingTrait;
 
-    public function __construct(FileTools $fileTools)
+    public function __construct(FileTools $fileTools, array $classMap)
     {
         $this->fileTools = $fileTools;
+        $this->classMap = $classMap;
     }
 
     public function renderType(Node $type, $indentation = 0, $skipIndent = false): void

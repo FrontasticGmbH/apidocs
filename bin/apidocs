@@ -20,7 +20,7 @@ try {
     touch($phpDoc->getConfiguration()->target . '/README.md');
     $phpDoc->render();
 
-    $restDoc = new RestDoc($configurationFile, $typeParser);
+    $restDoc = new RestDoc($configurationFile, $typeParser, $phpDoc);
     $restDoc->render();
 
     file_put_contents(

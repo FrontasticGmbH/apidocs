@@ -1,11 +1,11 @@
 <?php
 
-namespace Frontastic\Apidocs\RestDoc;
+namespace Frontastic\Apidocs\PhpDoc;
 
 use Frontastic\Apidocs\Tag;
 use Frontastic\Apidocs\TypeParser;
 
-class Return_ extends Tag
+class ReturnTag extends Tag
 {
     public $type;
 

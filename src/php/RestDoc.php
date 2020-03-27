@@ -22,15 +22,22 @@ class RestDoc
 
     private $typeParser;
 
+    private $phpDoc;
+
     private $configuration;
 
     private $index = '';
 
-    public function __construct(string $configurationFile, TypeParser $typeParser, array $formatter = [])
-    {
+    public function __construct(
+        string $configurationFile,
+        TypeParser $typeParser,
+        PhpDoc $phpDoc,
+        array $formatter = []
+    ) {
         $this->configurationFile = realpath($configurationFile);
         $this->fileTools = new FileTools(dirname(($this->configurationFile)));
         $this->typeParser = $typeParser;
+        $this->phpDoc = $phpDoc;
 
         $this->configuration = (object) Yaml::parse(file_get_contents($this->configurationFile));
 
@@ -55,7 +62,7 @@ class RestDoc
 
     public function render(): void
     {
-        $template = new RestDoc\Template($this->fileTools);
+        $template = new RestDoc\Template($this->fileTools, $this->phpDoc->getClasses());
 
         include $this->configuration->autoloader;
         if (!file_exists($this->configuration->target)) {
@@ -184,9 +191,9 @@ class RestDoc
                             foreach ($tags as $tag) {
                                 $tag = $this->createTag($tag, $fileName);
 
-                                if ($tag && $tag instanceof RestDoc\Request) {
+                                if ($tag && $tag instanceof RestDoc\RequestTag) {
                                     $request = $tag;
-                                } elseif ($tag && $tag instanceof RestDoc\Response) {
+                                } elseif ($tag && $tag instanceof RestDoc\ResponseTag) {
                                     $responses[] = $tag;
                                 }
                             }
@@ -223,7 +230,7 @@ class RestDoc
         $tagName = preg_replace(
             '(^(?:Docs|Apidocs)\\\\)',
             __CLASS__ . '\\',
-            $tag->getName()
+            $tag->getName() . 'Tag'
         );
 
         if (!class_exists($tagName)) {
@@ -231,7 +238,7 @@ class RestDoc
         }
 
         // Most amazing parser EVAR:
-        $tag = new $tagName(...array_map('trim', preg_split('(\\s*,\\s*)', trim($tag->getDescription(), '()'))));
+        $tag = new $tagName(...array_map('trim', preg_split('(["\']\\s*,\\s*["\'])', trim($tag->getDescription(), "()'\" \r\n\t"))));
         $tag->parseTypes($this->typeParser, $fileName);
 
         return $tag;
