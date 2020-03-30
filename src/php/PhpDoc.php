@@ -121,6 +121,7 @@ class PhpDoc
                 $entity,
                 $this->getMethods($entity, $file->getPath()),
                 $this->getProperties($entity, $file->getPath()),
+                $targetFile
             );
 
             $template->render(
@@ -283,7 +284,7 @@ class PhpDoc
         );
     }
 
-    private function prepareEntity(object $entity, array $methods, array $properties): object
+    private function prepareEntity(object $entity, array $methods, array $properties, string $fileName): object
     {
         $isInterface = $entity instanceof \phpDocumentor\Reflection\Php\Interface_;
 
@@ -300,6 +301,7 @@ class PhpDoc
             'description' => $entity->getDocBlock() ? (string) $entity->getDocBlock()->getDescription() : '',
             'methods' => $methods,
             'properties' => $properties,
+            'file' => $fileName,
         ];
     }
 
