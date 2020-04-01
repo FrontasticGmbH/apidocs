@@ -45,6 +45,15 @@ class PhpDoc
         }
         $this->configuration->files = $files;
 
+        $files = [];
+        foreach (($this->configuration->reference ?? []) as $index => $pattern) {
+            $files = array_merge(
+                $files,
+                $this->fileTools->getFiles(($this->configuration->source ?? '.') . '/' . $pattern)
+            );
+        }
+        $this->configuration->reference = $files;
+
         $this->configuration->source = $this->fileTools->makeAbsolute($this->configuration->source);
         $this->configuration->target = $this->fileTools->makeAbsolute($this->configuration->target);
         $this->configuration->autoloader = $this->fileTools->makeAbsolute($this->configuration->autoloader);
@@ -70,7 +79,10 @@ class PhpDoc
                         function (string $fileName): ?LocalFile {
                             return new LocalFile($fileName);
                         },
-                        $this->configuration->files
+                        array_merge(
+                            $this->configuration->files,
+                            $this->configuration->reference
+                        )
                     )
                 )
             );
@@ -93,7 +105,7 @@ class PhpDoc
 
         foreach ($project->getFiles() as $file) {
             $entity = array_values($file->getClasses())[0] ?? array_values($file->getInterfaces())[0] ?? null;
-            if (!$entity) {
+            if (!$entity || $this->isOnlyReference($file)) {
                 continue;
             }
 
@@ -114,18 +126,21 @@ class PhpDoc
             }
 
             $targetFile = $this->getTargetFileName($file->getPath());
-
-            $this->index .= sprintf(
-                "* [%s](%s)\n",
-                trim(str_replace($this->configuration->nameSpace, '', $entity->getFqsen()), '\\'),
-                $this->fileTools->getRelativePath($targetFile, $this->configuration->target . '/README.md')
-            );
-
             $entity = $this->prepareEntity(
                 $entity,
                 $this->getMethods($entity, $file->getPath()),
                 $this->getProperties($entity, $file->getPath()),
                 $targetFile
+            );
+            $this->classes[$entity->fullName] = $entity;
+
+            if ($this->isOnlyReference($file)) {
+                continue;
+            }
+            $this->index .= sprintf(
+                "* [%s](%s)\n",
+                $entity->name,
+                $this->fileTools->getRelativePath($entity->file, $this->configuration->target . '/README.md')
             );
 
             $template->render(
@@ -133,8 +148,16 @@ class PhpDoc
                 $entity,
                 $this->fileTools->getRelativePath($file->getPath(), $targetFile)
             );
-            $this->classes[$entity->fullName] = $entity;
         }
+    }
+
+    private function isOnlyReference($file): bool
+    {
+        if (!is_string($file)) {
+            $file = $file->getPath();
+        }
+
+        return in_array($file, $this->configuration->reference, true);
     }
 
     public function getIndex(): string

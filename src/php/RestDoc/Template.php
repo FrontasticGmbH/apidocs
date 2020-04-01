@@ -23,7 +23,7 @@ class Template
     public function renderType(Node $type, $indentation = 0, $skipIndent = false): void
     {
         if ($type instanceof Node\Type) {
-            $this->renderType($type->type);
+            $this->renderType($type->type, $indentation, $skipIndent);
             return;
         }
 
@@ -34,35 +34,56 @@ class Template
         switch (true) {
             case $type instanceof Node\Optional:
                 echo '*optional* ';
-                $this->renderType($type->type, $indentation + 1, true);
+                $this->renderType($type->type, $indentation, true);
                 break;
             case $type instanceof Node\Tuple:
                 echo "tuple (array containing):\n\n";
-                ++$indentation;
                 foreach ($type->types as $child) {
-                    echo str_repeat('  ', $indentation), '* ';
-                    $this->renderType($child, $indentation + 1, true);
+                    $this->renderType($child, $indentation + 1);
                     echo "\n\n";
                 }
-                --$indentation;
                 break;
             case $type instanceof Node\Identifier:
-                // @TODO: Link domain objects
-                echo '`', $type->identifier, '`', "\n\n";
+                if (isset($this->classMap[$type->identifier])) {
+                    $class = $this->classMap[$type->identifier];
+                    echo '`', $class->name, '`', "\n\n";
+                    foreach ($class->properties as $property) {
+                        echo str_repeat('  ', $indentation + 1), '* `', $property->name, '`: ';
+                        $this->renderType($property->type, $indentation + 1, true);
+                    }
+                } else {
+                    echo '`', $type->identifier, '`', "\n\n";
+                }
                 break;
             case $type instanceof Node\Collection:
                 echo 'collection of ';
-                $this->renderType($type->type, $indentation + 1, true);
+                $this->renderType($type->type, $indentation, true);
+                break;
+            case $type instanceof Node\AnyOf:
+                echo 'either of:', "\n\n";
+                foreach ($type->types as $child) {
+                    $this->renderType($child, $indentation + 1);
+                    echo "\n\n";
+                }
                 break;
             case $type instanceof Node\Generic:
-                // @TODO: Link domain objects
-                echo '`', $type->identifier, '` with:', "\n\n";
-                ++$indentation;
-                foreach ($type->properties as $property) {
-                    echo str_repeat('  ', $indentation), '* `', $property->identifier, '` as ';
+                if (isset($this->classMap[$type->identifier->identifier])) {
+                    $class = $this->classMap[$type->identifier->identifier];
+                    echo '`', $class->name, '`', "\n\n";
+
+                    $properties = array_replace(
+                        $class->properties,
+                        $type->properties
+                    );
+                } else {
+                    echo '`', $type->identifier->identifier, '` with:', "\n\n";
+                    $properties = $type->properties;
+                }
+
+                foreach ($properties as $property) {
+                    echo str_repeat('  ', $indentation + 1), '* `', ($property->identifier ?? $property->name), '` as ';
                     $this->renderType($property->type, $indentation + 1, true);
                 }
-                --$indentation;
                 break;
             default:
                 throw new \OutOfBoundsException('Unhandled node: ' . get_class($type));
