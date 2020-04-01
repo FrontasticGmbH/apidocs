@@ -36,11 +36,15 @@ class PhpDoc
 
         $this->configuration = (object) Yaml::parse(file_get_contents($this->configurationFile));
 
-        foreach ($this->configuration->files as $index => $fileName) {
-            $this->configuration->files[$index] = $this->fileTools->makeAbsolute(
-                ($this->configuration->source ?? '.') . '/' . $fileName
+        $files = [];
+        foreach ($this->configuration->files as $index => $pattern) {
+            $files = array_merge(
+                $files,
+                $this->fileTools->getFiles(($this->configuration->source ?? '.') . '/' . $pattern)
             );
         }
+        $this->configuration->files = $files;
+
         $this->configuration->source = $this->fileTools->makeAbsolute($this->configuration->source);
         $this->configuration->target = $this->fileTools->makeAbsolute($this->configuration->target);
         $this->configuration->autoloader = $this->fileTools->makeAbsolute($this->configuration->autoloader);

@@ -24,6 +24,20 @@ class FileTools
         return realpath($path);
     }
 
+    public function getFiles(string $pattern): array
+    {
+        if ($pattern[0] !== '/') {
+            $pattern = $this->rootPath . '/' . $pattern;
+        }
+
+        $files = [];
+        foreach (glob($pattern) as $file) {
+            $files[] = realpath($file);
+        }
+
+        return array_filter($files);
+    }
+
     public function getRelativePath(string $source, string $target): string
     {
         $absoluteTarget = array_values(array_filter(explode('/', $this->makeAbsolute($target))));
