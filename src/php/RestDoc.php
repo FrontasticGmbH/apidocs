@@ -112,11 +112,6 @@ class RestDoc
                 'title' => $this->configuration->name ?? 'Test Project',
                 'version' => '1.0.0', // @TODO: Dummy, where to get from?
             ],
-            'components' => [
-                'schemas' => [
-                    'AnyValue' => (object) [],
-                ],
-            ],
             'paths' => [],
         ];
 

@@ -88,12 +88,10 @@ class TypedJson extends Formatter
                 } elseif ($type->identifier === 'array') {
                     return (object) [
                         'type' => $type->identifier,
-                        'items' => ['$ref' => '#/components/schemas/AnyValue'],
+                        'items' => (object) [],
                     ];
                 } elseif ($type->identifier === 'mixed') {
-                    return (object) [
-                        '$ref' => '#/components/schemas/AnyValue',
-                    ];
+                    return (object) [];
                 } else {
                     return (object) [
                         'type' => str_replace(
