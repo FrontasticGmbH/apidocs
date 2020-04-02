@@ -19,6 +19,7 @@ class TypedJson extends Formatter
         'int' => 'integer',
         'float' => 'number',
         'bool' => 'boolean',
+        '\DateTimeImmutable' => 'string',
     ];
 
     public function getContentType(): string
@@ -124,19 +125,25 @@ class TypedJson extends Formatter
                     ],
                 ];
 
+                $properties = [];
                 if (isset($this->classMap[$type->identifier->identifier])) {
                     $class = $this->classMap[$type->identifier->identifier];
-                    $properties = array_replace(
-                        $class->properties,
-                        $type->properties
-                    );
+
+                    foreach ($class->properties as $property) {
+                        $properties[$property->name] = $property->type;
+                    }
+
+                    foreach ($type->properties as $property) {
+                        $properties[(string) $property->identifier] = $property->type;
+                    }
                 } else {
-                    $properties = $type->properties;
+                    foreach ($type->properties as $property) {
+                        $properties[(string) $property->identifier] = $property->type;
+                    }
                 }
 
-                foreach ($properties as $property) {
-                    $swaggerType->properties[(string) ($property->identifier ?? $property->name)] =
-                        $this->visitTypeForSwagger($property->type);
+                foreach ($properties as $name => $type) {
+                    $swaggerType->properties[$name] = $this->visitTypeForSwagger($type);
                 }
                 return $swaggerType;
             default:
