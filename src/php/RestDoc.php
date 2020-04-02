@@ -110,6 +110,12 @@ class RestDoc
             'openapi' => '3.0.0',
             'info' => [
                 'title' => $this->configuration->name ?? 'Test Project',
+                'version' => '1.0.0', // @TODO: Dummy, where to get from?
+            ],
+            'components' => [
+                'schemas' => [
+                    'AnyValue' => (object) [],
+                ],
             ],
             'paths' => [],
         ];
@@ -130,21 +136,25 @@ class RestDoc
             );
 
             $formatter = $this->getFormatter($entity);
+            $formatter->setClassMap($this->classMap);
 
             $paths = $this->getPaths($entity, $file->getPath());
             foreach ($paths as $path) {
                 $responses = [];
                 foreach ($path->responses as $response) {
                     $responses[(string) $response->status] = [
-                        'description' => $response->description,
-                        'content' => $this->visitTypeForSwagger($response->bodyType),
+                        'description' => (string) $response->description,
+                        'content' => $formatter->getSchema($response->bodyType),
                     ];
                 }
 
-                $swagger['paths'][$path->request->url][$path->request->method] = [
+                $swagger['paths'][$path->request->url][strtolower($path->request->method)] = [
                     'summary' => $path->summary,
-                    'description' => $path->description,
-                    'requestBody' => $this->visitTypeForSwagger($path->request->bodyType),
+                    'description' => (string) $path->description,
+                    'requestBody' => [
+                        'required' => true,
+                        'content' => $formatter->getSchema($path->request->bodyType),
+                    ],
                     'responses' => $responses,
                 ];
             }
@@ -161,80 +171,6 @@ class RestDoc
             $this->configuration->target . '/swagger.yml',
             Yaml::dump($swagger, 12, 2, Yaml::DUMP_OBJECT_AS_MAP)
         );
-    }
-
-    private function visitTypeForSwagger(Node $type): object
-    {
-        if ($type instanceof Node\Type) {
-            return $this->visitTypeForSwagger($type->type);
-        }
-
-        switch (true) {
-            case $type instanceof Node\Optional:
-                $swaggerType = $this->visitTypeForSwagger($type->type);
-                $swaggerType->nullable = true;
-                return $swaggerType;
-                break;
-            case $type instanceof Node\Tuple:
-                return (object) [
-                    'type' => 'array',
-                    'items' => array_map(
-                        [$this, 'visitTypeForSwagger'],
-                        $type->types
-                    ),
-                ];
-            case $type instanceof Node\Identifier:
-                if (isset($this->classMap[$type->identifier])) {
-                    $swaggerType = (object) [
-                        'type' => 'object',
-                        'properties' => []
-                    ];
-
-                    $class = $this->classMap[$type->identifier];
-                    foreach ($class->properties as $property) {
-                        $swaggerType->properties[$property->name] = $this->visitTypeForSwagger($property->type);
-                    }
-
-                    return $swaggerType;
-                } else {
-                    return (object) ['type' => $type->identifier];
-                }
-            case $type instanceof Node\Collection:
-                return (object) [
-                    'type' => 'array',
-                    'items' => $this->visitTypeForSwagger($type->type),
-                ];
-            case $type instanceof Node\AnyOf:
-                return (object) [
-                    'anyOf' => array_map(
-                        [$this, 'visitTypeForSwagger'],
-                        $type->types
-                    ),
-                ];
-            case $type instanceof Node\Generic:
-                $swaggerType = (object) [
-                    'type' => 'object',
-                    'properties' => []
-                ];
-
-                if (isset($this->classMap[$type->identifier->identifier])) {
-                    $class = $this->classMap[$type->identifier->identifier];
-                    $properties = array_replace(
-                        $class->properties,
-                        $type->properties
-                    );
-                } else {
-                    $properties = $type->properties;
-                }
-
-                foreach ($properties as $property) {
-                    $swaggerType->properties[(string) ($property->identifier ?? $property->name)] =
-                        $this->visitTypeForSwagger($property->type);
-                }
-                return $swaggerType;
-            default:
-                throw new \OutOfBoundsException('Unhandled node: ' . get_class($type));
-        }
     }
 
     public function getIndex(): string
