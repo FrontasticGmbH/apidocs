@@ -55,12 +55,17 @@ class TypedJson extends Formatter
                 return $swaggerType;
                 break;
             case $type instanceof Node\Tuple:
+                // There is no proper way to mdel tuples in swagger. The only
+                // way for us to model them is considering them an array of any
+                // of the tuple types.
                 return (object) [
                     'type' => 'array',
-                    'items' => array_map(
-                        [$this, 'visitTypeForSwagger'],
-                        $type->types
-                    ),
+                    'items' => [
+                        'oneOf' => array_map(
+                            [$this, 'visitTypeForSwagger'],
+                            $type->types
+                        ),
+                    ],
                 ];
             case $type instanceof Node\Identifier:
                 if (isset($this->classMap[$type->identifier])) {
