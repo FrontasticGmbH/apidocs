@@ -19,6 +19,7 @@ class TypedJson extends Formatter
         'int' => 'integer',
         'float' => 'number',
         'bool' => 'boolean',
+        // @TODO: Enable mapping to also provide a pattern for these kind of strings?
         '\DateTimeImmutable' => 'string',
     ];
 
