@@ -169,7 +169,7 @@ class RestDoc
 
         file_put_contents(
             $this->configuration->target . '/swagger.yml',
-            Yaml::dump($swagger, 12, 2, Yaml::DUMP_OBJECT_AS_MAP)
+            Yaml::dump($swagger, 20, 2, Yaml::DUMP_OBJECT_AS_MAP)
         );
     }
 
