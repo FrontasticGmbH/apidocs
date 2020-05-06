@@ -11,7 +11,8 @@
         "phpdocumentor/reflection-docblock": "^5.0",
         "phpdocumentor/reflection": "^4.0",
         "symfony/yaml": "^4.4",
-        "kore/data-object": "@stable"
+        "kore/data-object": "@stable",
+        "jean85/pretty-package-versions": "1.3.*"
     },
     "require-dev": {
         "pdepend/pdepend": "@stable",
