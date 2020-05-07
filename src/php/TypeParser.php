@@ -62,6 +62,14 @@ class TypeParser
             );
         }
 
+        if (isset($node->key)) {
+            $this->resolveTypes($node->key, $context);
+        }
+
+        if (isset($node->value)) {
+            $this->resolveTypes($node->value, $context);
+        }
+
         if (isset($node->type)) {
             $this->resolveTypes($node->type, $context);
         }

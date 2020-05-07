@@ -43,6 +43,10 @@ class Parser
         'T_PROPERTY_SEPARATOR' => 'shiftPropertySeparator',
         'T_GENERIC_END' => 'shiftGenericEnd',
 
+        'T_MAP_START' => 'shiftMapStart',
+        // 'T_TUPLE_SEPARATOR' => 'shiftTupleSeparator',
+        'T_MAP_END' => 'shiftMapEnd',
+
         'T_WHITESPACE' => 'shiftIgnore',
         'T_NEW_LINE' => 'shiftIgnore',
         'T_EOF' => 'shiftEndOfFile',
@@ -81,6 +85,11 @@ class Parser
             'reduceOptional',
             'reduceProperty',
             'reduceGeneric'
+        ],
+        'T_MAP_END' => [
+            'reduceOptional',
+            'reduceProperty',
+            'reduceMap'
         ],
         'T_OPTIONAL' => [
         ],
@@ -275,6 +284,20 @@ class Parser
         ]);
     }
 
+    private function shiftMapStart(object $token, array &$tokens): Node
+    {
+        return new Node\Map([
+            'token' => $token,
+        ]);
+    }
+
+    private function shiftMapEnd(object $token, array &$tokens): Node
+    {
+        return new Node\MapEnd([
+            'token' => $token,
+        ]);
+    }
+
     private function shiftEndOfFile(object $token, array &$tokens): Node
     {
         return new Node\Type([
@@ -381,6 +404,27 @@ class Parser
 
         $node = array_shift($this->documentStack);
         $node->properties = array_reverse($types);
+
+        return $node;
+    }
+
+    private function reduceMap(Node $node): ?Node
+    {
+        if (!isset($this->documentStack[0]) ||
+            !isset($this->documentStack[1]) ||
+            !isset($this->documentStack[2]) ||
+            !($this->documentStack[2] instanceof Node\Map)) {
+            throw new \RuntimeException(
+                'A map expects exactly two items (key & value).'
+            );
+        }
+
+        $value = array_shift($this->documentStack);
+        $key = array_shift($this->documentStack);
+        $node = array_shift($this->documentStack);
+
+        $node->key = $key;
+        $node->value = $value;
 
         return $node;
     }

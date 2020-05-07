@@ -61,6 +61,14 @@ class Tokenizer
                 'match' => '(\\A(?P<match>:))S',
             ],
             (object) [
+                'type' => 'T_MAP_START',
+                'match' => '(\\A(?P<match>array\\<))S',
+            ],
+            (object) [
+                'type' => 'T_MAP_END',
+                'match' => '(\\A(?P<match>\\>))S',
+            ],
+            (object) [
                 'type' => 'T_IDENTIFIER',
                 'match' => '(\\A(?P<match>' . self::IDENTIFIERS . '))S',
             ],
