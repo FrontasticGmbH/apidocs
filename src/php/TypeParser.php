@@ -32,6 +32,8 @@ class TypeParser
             }
             $namespace = $matches['namespace'];
             $context = $this->contextFactory->createForNamespace($namespace, file_get_contents($fileName));
+        } else {
+            $fileName = '–';
         }
 
         try {

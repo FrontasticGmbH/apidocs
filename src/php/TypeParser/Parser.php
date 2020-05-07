@@ -432,7 +432,6 @@ class Parser
     private function reduceType(Node $node): Node
     {
         if (count($this->documentStack) !== 1) {
-            var_dump($this->documentStack);
             throw new \RuntimeException('Expected single node left on document stack at EOF.');
         }
 

@@ -38,12 +38,38 @@ class TypeParserTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getTypesToParse
      */
-    public function testParseTypes(string $input, $output)
+    public function testParseTypes(string $input, string $output)
     {
         $typeParser = new TypeParser();
         $type = $typeParser->parse($input);
 
         $this->assertTrue($type instanceof TypeParser\Node\Type);
         $this->assertEquals($output, (string) $type);
+    }
+
+    public function getTypeParseErrors()
+    {
+        return array(
+            ['int string', 'Error parsing type int string in file –: Expected single node left on document stack at EOF.'],
+            ['array<int, int, int>', 'Error parsing type array<int, int, int> in file –: A map expects exactly two items (key & value).'],
+            ['{items: string[]}', 'Error parsing type {items: string[]} in file –: Generic object properties can only be defined on an identifier.'],
+            ['?{items: string[]}', 'Error parsing type ?{items: string[]} in file –: Generic object properties can only be defined on an identifier.'],
+        );
+    }
+
+    /**
+     * @dataProvider getTypeParseErrors
+     */
+    public function testParseErrors(string $input, string $error)
+    {
+        $typeParser = new TypeParser();
+        try {
+            $type = $typeParser->parse($input);
+        } catch (\RuntimeException $e) {
+            $this->assertSame($error, $e->getMessage());
+            return;
+        }
+
+        $this->fail('Expected exception with message: ' . $error);
     }
 }
