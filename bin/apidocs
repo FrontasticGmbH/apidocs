@@ -5,6 +5,8 @@ namespace Frontastic\Apidocs;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+ini_set('zend.exception_ignore_args', false);
+
 $configurationFile = $argv[1] ?? './.apidocs.yml';
 if (!file_exists($configurationFile)) {
     echo "Usage: ", $argv[0], " [<configurationFile]", PHP_EOL;

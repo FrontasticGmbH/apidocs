@@ -1,6 +1,6 @@
-#  PhpDoc
+#  RestDoc
 
-**Fully Qualified**: [`\Frontastic\Apidocs\PhpDoc`](../../src/php/PhpDoc.php)
+**Fully Qualified**: [`\Frontastic\Apidocs\RestDoc`](../../src/php/RestDoc.php)
 
 ## Methods
 
@@ -8,14 +8,15 @@
 * [render()](#render)
 * [getIndex()](#getindex)
 * [getConfiguration()](#getconfiguration)
-* [getClasses()](#getclasses)
 
 ### __construct()
 
 ```php
 public function __construct(
     string $configurationFile,
-    TypeParser $typeParser
+    TypeParser $typeParser,
+    PhpDoc $phpDoc,
+    array $formatter = []
 ): mixed
 ```
 
@@ -23,6 +24,8 @@ Argument|Type|Default|Description
 --------|----|-------|-----------
 `$configurationFile`|`string`||
 `$typeParser`|[`TypeParser`](TypeParser.md)||
+`$phpDoc`|[`PhpDoc`](PhpDoc.md)||
+`$formatter`|`array`|`[]`|
 
 Return Value: `mixed`
 
@@ -49,12 +52,4 @@ public function getConfiguration(): object
 ```
 
 Return Value: `object`
-
-### getClasses()
-
-```php
-public function getClasses(): array
-```
-
-Return Value: `array`
 

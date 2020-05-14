@@ -1,11 +1,12 @@
 #  FileTools
 
-Fully Qualified: [`\Frontastic\Apidocs\FileTools`](../../src/php/FileTools.php)
+**Fully Qualified**: [`\Frontastic\Apidocs\FileTools`](../../src/php/FileTools.php)
 
 ## Methods
 
 * [__construct()](#__construct)
 * [makeAbsolute()](#makeabsolute)
+* [getFiles()](#getfiles)
 * [getRelativePath()](#getrelativepath)
 
 ### __construct()
@@ -35,6 +36,20 @@ Argument|Type|Default|Description
 `$path`|`string`||
 
 Return Value: `string`
+
+### getFiles()
+
+```php
+public function getFiles(
+    string $pattern
+): array
+```
+
+Argument|Type|Default|Description
+--------|----|-------|-----------
+`$pattern`|`string`||
+
+Return Value: `array`
 
 ### getRelativePath()
 

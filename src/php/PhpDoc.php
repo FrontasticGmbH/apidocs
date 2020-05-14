@@ -43,6 +43,16 @@ class PhpDoc
                 $this->fileTools->getFiles(($this->configuration->source ?? '.') . '/' . $pattern)
             );
         }
+        usort(
+            $files,
+            function (string $a, string $b) {
+                // Sort by directory, and by filename only if directory is the same
+                //
+                // Ensures that files higher up in the tree are listed first
+                return $a <=> $b;
+                return dirname($a) <=> dirname($b) ?? basename($a) <=> basename($b);
+            }
+        );
         $this->configuration->files = $files;
 
         $files = [];
@@ -93,10 +103,14 @@ class PhpDoc
             foreach ($e->getTrace() as $call) {
                 if (($call['class'] === 'phpDocumentor\\Reflection\\Php\\Factory\\AbstractFactory') &&
                     ($call['function'] === 'create') &&
-                    count($call['args']) &&
+                    count($call['args'] ?? []) &&
                     ($call['args'][0] instanceof LocalFile)) {
                     $fileName = $call['args'][0]->path();
                 }
+            }
+
+            if (!$fileName) {
+                var_dump($e->getTrace());
             }
 
             echo '[e] Error parsing ', ($fileName ?: 'unknown'), ': ', $e->getMessage(), PHP_EOL;
@@ -119,6 +133,9 @@ class PhpDoc
             $template->addClassToIndex((string) $entity->getFqsen(), $targetFile);
         }
 
+        $commonPrefixLength = $this->getCommonPrefixLength($this->configuration->files);
+        $lastPrefix = 0;
+        $lastBasePath = '';
         foreach ($project->getFiles() as $file) {
             $entity = array_values($file->getClasses())[0] ?? array_values($file->getInterfaces())[0] ?? null;
             if (!$entity) {
@@ -137,8 +154,23 @@ class PhpDoc
             if ($this->isOnlyReference($file)) {
                 continue;
             }
+
+            $basePath = substr($entity->file, $commonPrefixLength + 1);
+            $prefix = substr_count($basePath, '/');
+
+            $lastPrefix = substr_count(substr($basePath, 0, $this->getCommonPrefixLength([$basePath, $lastBasePath])), '/');
+            for ($i = $lastPrefix; $i < $prefix; ++$i) {
+                $this->index .= sprintf(
+                    "%s* %s\n",
+                    str_repeat('  ', $i),
+                    explode('/', $basePath)[$i]
+                );
+            }
+            $lastBasePath = $basePath;
+
             $this->index .= sprintf(
-                "* [%s](%s)\n",
+                "%s* [%s](%s)\n",
+                str_repeat('  ', $prefix),
                 $entity->name,
                 $this->fileTools->getRelativePath($entity->file, $this->configuration->target . '/README.md')
             );
@@ -149,6 +181,17 @@ class PhpDoc
                 $this->fileTools->getRelativePath($file->getPath(), $targetFile)
             );
         }
+    }
+
+    private function getCommonPrefixLength(array $files): int
+    {
+        $commonPrefixLength = 0;
+        $firstFile = $files[0];
+        $lastFile = end($files);
+        $minLength = min(strlen($firstFile), strlen($lastFile));
+
+        for ($i = 0; $i < $minLength && $firstFile[$i] === $lastFile[$i]; ++$i);
+        return $i;
     }
 
     private function isOnlyReference($file): bool

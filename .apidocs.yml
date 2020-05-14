@@ -6,5 +6,5 @@ autoloader: vendor/autoload.php
 nameSpace: "\\Frontastic\\Apidocs"
 files:
  - php/*.php
- - php/TypeParser/*.php
- - php/TypeParser/*/*.php
+ - php/*/*.php
+ - php/*/*/*.php
