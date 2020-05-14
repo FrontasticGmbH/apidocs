@@ -210,8 +210,12 @@ class RestDoc
                         }
 
                         return (object) [
-                            'summary' => $method->getDocBlock() ? (string) $method->getDocBlock()->getSummary() : null,
-                            'description' => $method->getDocBlock() ? (string) $method->getDocBlock()->getDescription() : null,
+                            'summary' => $method->getDocBlock() ?
+                                (string) $method->getDocBlock()->getSummary() :
+                                null,
+                            'description' => $method->getDocBlock() ?
+                                (string) $method->getDocBlock()->getDescription() :
+                                null,
                             'request' => $request,
                             'responses' => $responses,
                         ];
@@ -248,7 +252,15 @@ class RestDoc
         }
 
         // Most amazing parser EVAR:
-        $tag = new $tagName(...array_map('trim', preg_split('(["\']\\s*,\\s*["\'])', trim($tag->getDescription(), "()'\" \r\n\t"))));
+        $tag = new $tagName(
+            ...array_map(
+                'trim',
+                preg_split(
+                    '(["\']\\s*,\\s*["\'])',
+                    trim($tag->getDescription(), "()'\" \r\n\t")
+                )
+            )
+        );
         $tag->parseTypes($this->typeParser, $fileName);
 
         return $tag;

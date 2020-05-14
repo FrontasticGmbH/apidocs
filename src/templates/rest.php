@@ -1,4 +1,7 @@
-# <?php $this->e($entity->summary); ?>
+# <?php
+// @codingStandardsIgnoreStart
+$this->e($entity->summary);
+?>
 
 
 <?php $this->w($entity->description); ?>
