@@ -6,9 +6,5 @@ parameters:
         - src/templates/*
     inferPrivatePropertyTypeFromConstructor: true
     ignoreErrors:
-        - '#Tideways\\Profiler#'
-        - '#invalid typehint type Frontastic\\Catwalk\\ApiCoreBundle\\Domain\\Context#'
-        - '#Frontastic\\Catwalk\\ApiCoreBundle\\Domain\\Context not found#'
-        - '#Result of method Kore\\DataObject\\DataObject::__get\(\) \(void\) is used.#'
-        - '#Function debug not found.*#'
+        - '#does not call parent constructor from Kore\\DataObject\\DataObject.#'
     reportUnmatchedIgnoredErrors: false

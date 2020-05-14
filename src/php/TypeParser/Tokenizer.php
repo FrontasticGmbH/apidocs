@@ -15,6 +15,21 @@ class Tokenizer
      */
     const IDENTIFIERS = '[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*';
 
+    /**
+     * @var \phpDocumentor\Reflection\TypeResolver
+     */
+    private $typeResolver;
+
+    /**
+     * @var \phpDocumentor\Reflection\Types\ContextFactory
+     */
+    private $contextFactory;
+
+    /**
+     * @var array
+     */
+    private $tokens = [];
+
     public function __construct()
     {
         $this->typeResolver = new \phpDocumentor\Reflection\TypeResolver();

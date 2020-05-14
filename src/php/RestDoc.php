@@ -32,6 +32,8 @@ class RestDoc
 
     private $classMap = [];
 
+    private $formatter = [];
+
     public function __construct(
         string $configurationFile,
         TypeParser $typeParser,
@@ -274,7 +276,7 @@ class RestDoc
             foreach ($tags as $tag) {
                 $tag = $this->createTag($tag, null);
 
-                if ($tag instanceof RestDoc\Format) {
+                if ($tag instanceof RestDoc\FormatTag) {
                     $format = $tag->format;
                     break;
                 }
