@@ -31,3 +31,4 @@ Argument|Type|Default|Description
 
 Return Value: `object`
 
+Generated with [Frontastic API Docs](https://github.com/FrontasticGmbH/apidocs).

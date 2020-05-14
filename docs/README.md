@@ -47,3 +47,6 @@ Here you find the API documentation for the relevant classes:
     * [Type](php/TypeParser/Node/Type.md)
   * [Parser](php/TypeParser/Parser.md)
   * [Tokenizer](php/TypeParser/Tokenizer.md)
+
+
+Generated with [Frontastic API Docs](https://github.com/FrontasticGmbH/apidocs).

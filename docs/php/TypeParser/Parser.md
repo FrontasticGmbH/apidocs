@@ -25,3 +25,4 @@ Argument|Type|Default|Description
 
 Return Value: [`Node`](Node.md)
 
+Generated with [Frontastic API Docs](https://github.com/FrontasticGmbH/apidocs).

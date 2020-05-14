@@ -37,3 +37,6 @@ Status: <?php $this->e($response->status); ?>
 <?php endforeach; ?>
 
 <?php endforeach; ?>
+
+
+Generated with [Frontastic API Docs](https://github.com/FrontasticGmbH/apidocs).

@@ -181,6 +181,8 @@ class PhpDoc
                 $this->fileTools->getRelativePath($file->getPath(), $targetFile)
             );
         }
+
+        $this->index .= "\n\nGenerated with [Frontastic API Docs](https://github.com/FrontasticGmbH/apidocs).";
     }
 
     private function getCommonPrefixLength(array $files): int

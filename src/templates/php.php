@@ -64,3 +64,6 @@ Return Value: <?php $this->e($this->linkOwn($targetFile, '`' . $method->return .
 
 <?php endforeach; ?>
 <?php endif; ?>
+
+
+Generated with [Frontastic API Docs](https://github.com/FrontasticGmbH/apidocs).
