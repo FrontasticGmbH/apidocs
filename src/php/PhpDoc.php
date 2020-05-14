@@ -158,7 +158,10 @@ class PhpDoc
             $basePath = substr($entity->file, $commonPrefixLength + 1);
             $prefix = substr_count($basePath, '/');
 
-            $lastPrefix = substr_count(substr($basePath, 0, $this->getCommonPrefixLength([$basePath, $lastBasePath])), '/');
+            $lastPrefix = substr_count(
+                substr($basePath, 0, $this->getCommonPrefixLength([$basePath, $lastBasePath])),
+                '/'
+            );
             for ($i = $lastPrefix; $i < $prefix; ++$i) {
                 $this->index .= sprintf(
                     "%s* %s\n",
@@ -192,7 +195,9 @@ class PhpDoc
         $lastFile = end($files);
         $minLength = min(strlen($firstFile), strlen($lastFile));
 
-        for ($i = 0; $i < $minLength && $firstFile[$i] === $lastFile[$i]; ++$i);
+        for ($i = 0; $i < $minLength && $firstFile[$i] === $lastFile[$i]; ++$i) {
+            // Do nothing
+        }
         return $i;
     }
 
